@@ -1,4 +1,7 @@
 *.iml
+app/build.gradle.kts
+app/google-services.json
+build.gradle.kts
 .gradle
 /local.properties
 /.idea/caches
