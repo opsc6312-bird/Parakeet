@@ -2,6 +2,14 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+<<<<<<< HEAD
+=======
+    // Add the Crashlytics Gradle plugin
+    id("com.google.firebase.crashlytics")
+    // Add the Performance Monitoring Gradle plugin
+    id("com.google.firebase.firebase-perf")
+    id("kotlin-kapt")
+>>>>>>> 46ab6caa1e969c14ca21f6e78c94f487930fb171
 }
 
 android {
@@ -37,7 +45,6 @@ android {
 }
 
 dependencies {
-
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
@@ -48,6 +55,22 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+<<<<<<< HEAD
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-analytics")
+=======
+    //Firebase authentication
+    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-analytics")
+
+    //analytics
+    implementation("com.google.firebase:firebase-crashlytics")
+    implementation("com.google.firebase:firebase-analytics")
+
+    //Performance
+    implementation("com.google.firebase:firebase-perf")
+>>>>>>> 46ab6caa1e969c14ca21f6e78c94f487930fb171
 }
