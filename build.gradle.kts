@@ -3,17 +3,8 @@ plugins {
     id("com.android.application") version "8.2.2" apply false
     id("org.jetbrains.kotlin.android") version "1.9.22" apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 46ab6caa1e969c14ca21f6e78c94f487930fb171
     // Add the dependency for the Crashlytics Gradle plugin
     id("com.google.firebase.crashlytics") version "3.0.2" apply false
     // Add the dependency for the Performance Monitoring Gradle plugin
     id("com.google.firebase.firebase-perf") version "1.4.2" apply false
-<<<<<<< HEAD
->>>>>>> 46ab6caa1e969c14ca21f6e78c94f487930fb171
-=======
->>>>>>> 46ab6caa1e969c14ca21f6e78c94f487930fb171
 }
