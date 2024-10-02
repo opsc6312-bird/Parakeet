@@ -3,7 +3,9 @@ package com.example.parakeet_application.fragment
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.LocationRequest
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +18,10 @@ import androidx.core.content.res.ResourcesCompat
 import com.example.parakeet_application.R
 import com.example.parakeet_application.data.constants.AppConstant
 import com.example.parakeet_application.databinding.FragmentHomeBinding
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationAvailability
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -29,6 +35,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
     private var permissionRequest = mutableListOf<String>()
     private var isLocationPermissionOk: Boolean = false
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
+    private var fusedLocationProviderClient: FusedLocationProviderClient?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,8 +79,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    override fun onMapReady(p0: GoogleMap) {
-        mGoogleMap =mGoogleMap
+    override fun onMapReady(googleMap: GoogleMap) {
+        mGoogleMap = googleMap
         when {
             ActivityCompat.checkSelfPermission(
                 requireContext(),
@@ -100,9 +109,43 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private fun requestLocation() {
         permissionRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
         permissionRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+        permissionLauncher.launch(permissionRequest.toTypedArray())
     }
 
     private fun setUpGoogleMap() {
-        TODO("Not yet implemented")
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        mGoogleMap.isMyLocationEnabled = true
+        mGoogleMap.uiSettings.isTiltGesturesEnabled = true
+        setUpLocationUpdate()
+    }
+
+    private fun setUpLocationUpdate() {
+
+        locationRequest = LocationRequest.create()
+        locationRequest.interval = 10000
+        locationRequest.fastestInterval = 5000
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationCallback = object :LocationCallback(){
+            override fun onLocationResult(locationResult: LocationResult) {
+                super.onLocationResult(locationResult)
+                for (location in locationResult.locations){
+                    Log.d("TAG", "onLocationResult: s")
+                }
+            }
+
+            override fun onLocationAvailability(p0: LocationAvailability) {
+                super.onLocationAvailability(p0)
+            }
+        }
     }
 }
