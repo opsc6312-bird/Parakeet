@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/nav_graph">
-
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    android:startDestination="@id/btnHome">
+    <fragment
+        android:id="@+id/btnHome"
+        android:name="com.example.parakeet_application.fragment.HomeFragment"
+        tools:layout="@layout/fragment_home"
+        />
+    <fragment
+        android:id="@+id/btnSavedPlaces"
+        android:name="com.example.parakeet_application.fragment.SavedPlacesFragment"
+        tools:layout="@layout/fragment_saved_places"
+        />
+    <fragment
+        android:id="@+id/btnSetting"
+        android:name="com.example.parakeet_application.fragment.SettingsFragment"
+        tools:layout="@layout/fragment_settings"
+        />
 </navigation>
