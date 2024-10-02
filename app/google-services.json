@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "958243315036",
+    "project_id": "nearmeapplicationtwo",
+    "storage_bucket": "nearmeapplicationtwo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:958243315036:android:8db21867a8c31e4f2af599",
+        "android_client_info": {
+          "package_name": "com.example.parakeet_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4mpvzU2jC1Qj-EWEF_Enhf-Y-Mc76uqw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
