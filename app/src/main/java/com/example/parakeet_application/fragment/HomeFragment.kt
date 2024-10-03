@@ -7,6 +7,7 @@ import android.location.Location
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
+import androidx.fragment.app.viewModels
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -22,9 +23,13 @@ import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import androidx.lifecycle.lifecycleScope
 import com.example.parakeet_application.R
 import com.example.parakeet_application.constants.AppConstant
+import com.example.parakeet_application.data.model.mapsModel.GooglePlaceModel
+import com.example.parakeet_application.data.model.mapsModel.GoogleResponseModel
 import com.example.parakeet_application.databinding.FragmentHomeBinding
 import com.example.parakeet_application.permissions.AppPermissions
 import com.example.parakeet_application.utility.LoadingDialog
+import com.example.parakeet_application.utility.State
+import com.example.parakeet_application.viewModel.LocationViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
@@ -64,6 +69,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private lateinit var firebaseAuth: FirebaseAuth
     private var isTrafficEnable: Boolean = false
     private var radius = 1500
+    private val locationViewModel: LocationViewModel by viewModels<LocationViewModel>()
+    private lateinit var googlePlaceList: ArrayList<GooglePlaceModel>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -151,10 +158,33 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getNearbyPlaces(placeType: String) {
-        val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${currentLocation.latitude},${currentLocation.longitude}&radius=${radius}&type=${placeType}&key=${resources.getString(R.string.API_KEY)}"
+        val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" +
+                "${currentLocation.latitude},${currentLocation.longitude}" +
+                "&radius=${radius}&type=${placeType}&key=" +
+                resources.getString(R.string.API_KEY)
 
         lifecycleScope.launch {
-
+            locationViewModel.getNearByPlaces(url).collect{
+                when(it) {
+                    is State.Failed -> {
+                        loadingDialog.stopLoading()
+                        Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG).show()
+                    }
+                    is State.Loading -> {
+                        if (it.flag == true){
+                            loadingDialog.startLoading()
+                        }
+                    }
+                    is State.Success -> {
+                        loadingDialog.stopLoading()
+                        val googleResponseModel: GoogleResponseModel = it.data as GoogleResponseModel
+                        if (googleResponseModel.googlePlaceModelList != null &&
+                            googleResponseModel.googlePlaceModelList.isNotEmpty()){
+                           // Snackbar.make(binding.root, googleResponseModel, Snackbar.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
         }
     }
 

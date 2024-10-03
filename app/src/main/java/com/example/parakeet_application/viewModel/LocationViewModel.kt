@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 class LocationViewModel: ViewModel() {
     private val repo  = AppRepo()
-    fun getNearByPlaces(url: String) = repo.getPlaces()
+    fun getNearByPlaces(url: String) = repo.getPlaces(url)
 
-    }
 }

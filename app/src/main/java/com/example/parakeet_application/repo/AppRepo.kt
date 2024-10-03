@@ -1,7 +1,9 @@
 package com.example.parakeet_application.repo
 
 import android.net.Uri
+import android.util.Log
 import com.example.parakeet_application.constants.AppConstant
+import com.example.parakeet_application.data.api.Client.RetrofitClient
 import com.example.parakeet_application.data.model.UserModel
 //import com.example.parakeet_application.SavedPlaceModel
 //import com.example.parakeet_application.data.model.UserModel
@@ -99,10 +101,13 @@ class AppRepo {
     }.flowOn(Dispatchers.IO)
 
     fun getPlaces(url: String): Flow<State<Any>> = flow<State<Any>> {
-
+        emit(State.Loading(true))
+        val response = RetrofitClient.retrofitApi.getNearbyPlaces(url)
+        Log.d("TAG", "getPlaces: ${response}")
+        if (response.body()?.googlePlaceModelList?.size!!>0){
+            emit(State.success(response.body()!!.error!!))
+        }
     }.catch {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
-
-
 }
