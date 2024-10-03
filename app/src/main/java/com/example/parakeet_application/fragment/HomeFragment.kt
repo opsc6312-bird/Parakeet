@@ -2,6 +2,8 @@ package com.example.parakeet_application.fragment
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
@@ -18,6 +20,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import androidx.lifecycle.lifecycleScope
@@ -41,6 +44,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -91,6 +95,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         appPermission = AppPermissions()
         loadingDialog = LoadingDialog(requireActivity())
         firebaseAuth = Firebase.auth
+        googlePlaceList = ArrayList()
         permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
                 permissions -> isLocationPermissionOk= permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
                 && permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
@@ -180,12 +185,48 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                         val googleResponseModel: GoogleResponseModel = it.data as GoogleResponseModel
                         if (googleResponseModel.googlePlaceModelList != null &&
                             googleResponseModel.googlePlaceModelList.isNotEmpty()){
-                           // Snackbar.make(binding.root, googleResponseModel, Snackbar.LENGTH_LONG).show()
+                            googlePlaceList.clear()
+                            mGoogleMap?.clear()
+
+                            for (i in googleResponseModel.googlePlaceModelList.indices){
+                                googlePlaceList.add(googleResponseModel.googlePlaceModelList[i])
+                                addMarker(googleResponseModel.googlePlaceModelList[i], i)
+                            }
+                          }else{
+                              mGoogleMap?.clear()
+                            googlePlaceList.clear()
                         }
                     }
                 }
             }
         }
+    }
+
+    private fun addMarker(googlePlaceModel: GooglePlaceModel, position: Int) {
+        val markerOptions = MarkerOptions()
+            .position(
+                LatLng(
+                    googlePlaceModel.geometry?.location?.latitude!!,
+                    googlePlaceModel.geometry?.location?.longitude!!
+                )
+            )
+            .title(googlePlaceModel.name)
+            .snippet(googlePlaceModel.vicinity)
+        markerOptions.icon(getCustomIcon())
+        mGoogleMap?.addMarker(markerOptions)
+    }
+
+    private fun getCustomIcon(): BitmapDescriptor {
+        val background = ContextCompat.getDrawable(requireContext(), R.drawable.ic_location)
+        background?.setTint(resources.getColor(R.color.purple_700, null))
+        background?.setBounds(0, 0, background.intrinsicWidth, background.intrinsicHeight)
+        val bitmap = Bitmap.createBitmap(
+            background?.intrinsicWidth!!, background.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        background.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
 
