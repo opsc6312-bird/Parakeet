@@ -1,30 +1,21 @@
 package com.example.parakeet_application.repo
 
 import android.net.Uri
-import android.util.Log
-import android.widget.Toast
-import com.example.parakeet_application.UserModel
-import com.example.parakeet_application.constant.AppConstant
+import com.example.parakeet_application.constants.AppConstant
+import com.example.parakeet_application.data.model.UserModel
 //import com.example.parakeet_application.SavedPlaceModel
-//import com.example.parakeet_application.UserModel
+//import com.example.parakeet_application.data.model.UserModel
 //import com.example.parakeet_application.constant.AppConstant
 //import com.example.parakeet_application.models.googlePlaceModel.GooglePlaceModel
 //import com.example.parakeet_application.network.RetrofitClient
 import com.example.parakeet_application.utility.State
-import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
 
@@ -68,7 +59,6 @@ class AppRepo {
             )
 
             createUser(userModel, auth)
-
             emit(State.success("Email verification sent"))
 
         }

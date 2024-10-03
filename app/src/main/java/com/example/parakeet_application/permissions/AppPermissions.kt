@@ -6,7 +6,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.parakeet_application.constant.AppConstant
+import com.example.parakeet_application.constants.AppConstant
+
 class AppPermissions {
 
     fun isStorageOk(context: Context): Boolean {
