@@ -72,7 +72,7 @@ dependencies {
 
     //Image Cropper
     api("com.theartofdev.edmodo:android-image-cropper:")
-    implementation("com.github.CanHub:Android-Image-Cropper:4.5.0")
+    implementation("com.canhub.cropper:android-image-cropper:4.3.2")
     implementation("com.soundcloud.android:android-crop:1.0.1@aar")
     implementation("com.github.bumptech.glide:glide:4.12.0")
 

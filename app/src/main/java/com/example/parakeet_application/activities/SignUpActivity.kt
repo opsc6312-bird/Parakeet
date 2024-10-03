@@ -18,6 +18,7 @@ import com.example.parakeet_application.utility.State
 import com.example.parakeet_application.viewModels.LoginViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.soundcloud.android.crop.CropImageView
+
 import kotlinx.coroutines.launch
 
 class SignUpActivity : AppCompatActivity() {
@@ -62,22 +63,17 @@ class SignUpActivity : AppCompatActivity() {
                                   is State.Success->{
                                       loadingDialog.stopLoading()
                                       Snackbar.make(binding.root, it.data.toString(), Snackbar.LENGTH_SHORT).show()
-
                                   }
 
                                   is State.Failed->{
-
                                       loadingDialog.stopLoading()
                                       Snackbar.make(binding.root, it.error , Snackbar.LENGTH_SHORT).show()
 
                                   }
                               }
                           }
-
                       } else {
                           Snackbar.make(binding.root, "Please select image", Snackbar.LENGTH_SHORT).show()
-
-
                       }
                   }
               }
@@ -93,7 +89,9 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-    fun pickImage() = CropImage.activity().setCropShape(CropImageView.CropShape.OVAL).start(this)
+    fun pickImage() {
+        CropImage.activity().setCropShape(CropImageView.CropShape.OVAL).start(this)
+    }
 
     private fun areFieldReady(): Boolean {
         username = binding.edtUsername.text.trim().toString()
