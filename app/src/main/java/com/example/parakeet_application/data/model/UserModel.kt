@@ -1,4 +1,4 @@
-package com.example.parakeet_application
+package com.example.parakeet_application.data.model
 
 data class UserModel(
     var email: String = "",

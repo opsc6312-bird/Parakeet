@@ -11,8 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.6"
+        android:importantForAccessibility="no"
+        android:contentDescription="Image"
         android:scaleType="centerCrop"
-        android:src="@drawable/signup_background" />
+    />
 
     <ImageView
         android:id="@+id/btnBack"
@@ -20,6 +22,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:layout_marginTop="?actionBarSize"
+        android:importantForAccessibility="no"
+        android:contentDescription="Back button"
         android:src="@drawable/ic_back"
         app:tint="@color/white" />
 
@@ -43,7 +47,7 @@
                 android:gravity="center"
                 android:text="Near Me"
                 android:textColor="@color/white"
-                android:textSize="40dp"
+                android:textSize="40sp"
                 android:textStyle="bold" />
 
             <de.hdodenhof.circleimageview.CircleImageView
@@ -51,7 +55,7 @@
                 android:layout_width="90dp"
                 android:layout_height="90dp"
                 android:layout_marginTop="10dp"
-                android:src="@drawable/ic_attach_image" />
+                android:src="@drawable/ic_photo_upload" />
 
         </LinearLayout>
 
@@ -83,15 +87,17 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="30dp"
                 android:layout_marginTop="10dp"
+                android:autofillHints=""
                 android:backgroundTint="@color/white"
                 android:drawableStart="@drawable/ic_email"
                 android:drawablePadding="10dp"
                 android:drawableTint="@color/white"
                 android:fontFamily="@font/playfair_display"
                 android:hint="Email"
-                android:inputType="textEmailAddress"
+                android:importantForAutofill="no" android:inputType="textEmailAddress"
                 android:maxLines="1"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                />
 
             <EditText
                 android:id="@+id/edtPassword"

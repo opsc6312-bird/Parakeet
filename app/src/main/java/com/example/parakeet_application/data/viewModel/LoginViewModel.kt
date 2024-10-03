@@ -1,4 +1,4 @@
-package com.example.parakeet_application.viewModels
+package com.example.parakeet_application.data.viewModel
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel

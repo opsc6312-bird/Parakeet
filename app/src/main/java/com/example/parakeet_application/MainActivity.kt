@@ -8,11 +8,11 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
+import com.example.parakeet_application.data.model.UserModel
 import com.example.parakeet_application.databinding.ActivityMainBinding
 import com.example.parakeet_application.databinding.NavigationDrawerLayoutBinding
 import com.example.parakeet_application.databinding.ToolbarLayoutBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
