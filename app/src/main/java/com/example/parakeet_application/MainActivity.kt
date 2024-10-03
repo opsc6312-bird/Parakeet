@@ -2,6 +2,7 @@ package com.example.parakeet_application
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
@@ -54,9 +55,9 @@ class MainActivity : AppCompatActivity() {
             navController
         )
         val headerLayout = navigationDrawerLayoutBinding.navView.getHeaderView(0)
-        imgHeader = headerLayout.findViewById(R.id.imgHeader)
-        txtName = headerLayout.findViewById(R.id.txtHeaderName)
-        txtEmail = headerLayout.findViewById(R.id.txtHeaderEmail)
+        imgHeader = headerLayout.findViewById<ImageView>(R.id.imgHeader)
+        txtName = headerLayout.findViewById<TextView>(R.id.txtHeaderName)
+        txtEmail = headerLayout.findViewById<TextView>(R.id.txtHeaderEmail)
     }
 
     @Deprecated("Deprecated in Java",
