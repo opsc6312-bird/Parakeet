@@ -1,8 +1,8 @@
 package com.example.parakeet_application.repo
 
 import android.net.Uri
+import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.data.model.UserModel
-import com.example.parakeet_application.constant.AppConstant
 //import com.example.parakeet_application.SavedPlaceModel
 //import com.example.parakeet_application.data.model.UserModel
 //import com.example.parakeet_application.constant.AppConstant

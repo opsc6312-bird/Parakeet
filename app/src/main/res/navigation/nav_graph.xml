@@ -3,20 +3,46 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    android:startDestination="@id/btnHome">
+    app:startDestination="@id/btnHome">
+
     <fragment
         android:id="@+id/btnHome"
         android:name="com.example.parakeet_application.fragment.HomeFragment"
-        tools:layout="@layout/fragment_home"
-        />
+        tools:layout="@layout/fragment_home" />
+
     <fragment
         android:id="@+id/btnSavedPlaces"
         android:name="com.example.parakeet_application.fragment.SavedPlacesFragment"
-        tools:layout="@layout/fragment_saved_places"
-        />
+        tools:layout="@layout/fragment_saved_places" />
+
     <fragment
         android:id="@+id/btnSetting"
         android:name="com.example.parakeet_application.fragment.SettingsFragment"
-        tools:layout="@layout/fragment_settings"
-        />
+        tools:layout="@layout/fragment_settings" />
+
+    <!-- Actions for navigation -->
+    <action
+        android:id="@+id/action_btnHome_to_btnSavedPlaces"
+        app:destination="@id/btnSavedPlaces" />
+
+    <action
+        android:id="@+id/action_btnHome_to_btnSetting"
+        app:destination="@id/btnSetting" />
+
+    <action
+        android:id="@+id/action_btnSavedPlaces_to_btnHome"
+        app:destination="@id/btnHome" />
+
+    <action
+        android:id="@+id/action_btnSetting_to_btnHome"
+        app:destination="@id/btnHome" />
+
+    <action
+        android:id="@+id/action_btnSavedPlaces_to_btnSetting"
+        app:destination="@id/btnSetting" />
+
+    <action
+        android:id="@+id/action_btnSetting_to_btnSavedPlaces"
+        app:destination="@id/btnSavedPlaces" />
+
 </navigation>

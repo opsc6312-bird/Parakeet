@@ -80,16 +80,17 @@ dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
     //Image Cropper
-    api("com.theartofdev.edmodo:android-image-cropper:")
-    implementation("com.github.CanHub:Android-Image-Cropper:4.5.0")
-    implementation("com.soundcloud.android:android-crop:1.0.1@aar")
+    //api("com.theartofdev.edmodo:android-image-cropper:")
+    implementation ("com.github.yalantis:ucrop:2.2.8")
+    //implementation("com.github.CanHub:Android-Image-Cropper:4.5.0")
+   // implementation("com.soundcloud.android:android-crop:1.0.1@aar")
     implementation("com.github.bumptech.glide:glide:4.12.0")
+    implementation("io.github.florent37:shapeofview:1.4.7")
 
     //ViewModels
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
     implementation("androidx.fragment:fragment-ktx:1.8.4")
     //Circular Indicator library
-    implementation("com.victor:lib:1.0.4")
-    implementation ("com.github.yalantis:ucrop:2.2.8")
+    //implementation("com.victor:lib:1.0.4")
 }

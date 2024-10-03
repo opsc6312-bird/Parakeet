@@ -1,4 +1,4 @@
-package com.example.parakeet_application.data.constants
+package com.example.parakeet_application.constants
 
 import com.example.parakeet_application.R
 import com.example.parakeet_application.data.model.PlacesModel

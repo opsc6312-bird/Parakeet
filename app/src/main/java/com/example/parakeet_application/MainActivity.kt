@@ -8,6 +8,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
+import com.bumptech.glide.Glide
 import com.example.parakeet_application.data.model.UserModel
 import com.example.parakeet_application.databinding.ActivityMainBinding
 import com.example.parakeet_application.databinding.NavigationDrawerLayoutBinding
@@ -19,6 +20,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import de.hdodenhof.circleimageview.CircleImageView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var navigationDrawerLayoutBinding: NavigationDrawerLayoutBinding
@@ -55,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             navController
         )
         val headerLayout = navigationDrawerLayoutBinding.navView.getHeaderView(0)
-        imgHeader = headerLayout.findViewById<ImageView>(R.id.imgHeader)
+        imgHeader = headerLayout.findViewById<ImageView>(R.id.imgHeader) as CircleImageView
         txtName = headerLayout.findViewById<TextView>(R.id.txtHeaderName)
         txtEmail = headerLayout.findViewById<TextView>(R.id.txtHeaderEmail)
     }

@@ -20,8 +20,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import com.example.parakeet_application.R
-import com.example.parakeet_application.data.constants.AppConstant
+import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.databinding.FragmentHomeBinding
+import com.example.parakeet_application.permissions.AppPermissions
 import com.example.parakeet_application.utility.LoadingDialog
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationAvailability
@@ -47,7 +48,7 @@ import com.google.firebase.ktx.Firebase
 class HomeFragment : Fragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentHomeBinding
     private var mGoogleMap: GoogleMap? = null
-    private lateinit var appPermission: RuntimePermission
+    private lateinit var appPermission: AppPermissions
     private lateinit var loadingDialog: LoadingDialog
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
     private var permissionRequest = mutableListOf<String>()

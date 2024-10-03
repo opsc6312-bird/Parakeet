@@ -17,9 +17,8 @@ import com.example.parakeet_application.databinding.ActivitySignUpBinding
 import com.example.parakeet_application.permissions.AppPermissions
 import com.example.parakeet_application.utility.LoadingDialog
 import com.example.parakeet_application.utility.State
-import com.example.parakeet_application.data.viewModel.LoginViewModel
+import com.example.parakeet_application.viewModel.LoginViewModel
 import com.google.android.material.snackbar.Snackbar
-import com.soundcloud.android.crop.CropImageView
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.launch
 import java.io.File
@@ -76,7 +75,6 @@ class SignUpActivity : AppCompatActivity() {
               lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
                   if (areFieldReady()){
                       if(image!=null){
-
                           loginViewModel.signUp(email, password, username, image!!).collect{
                               when(it){
                                   is State.Loading->{
