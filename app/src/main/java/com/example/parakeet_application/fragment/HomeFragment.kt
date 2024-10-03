@@ -1,60 +1,252 @@
 package com.example.parakeet_application.fragment
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.location.Location
 import android.os.Bundle
+import android.os.Looper
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import com.example.parakeet_application.R
+import com.example.parakeet_application.data.constants.AppConstant
+import com.example.parakeet_application.databinding.FragmentHomeBinding
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationAvailability
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.chip.Chip
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class HomeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
+class HomeFragment : Fragment(), OnMapReadyCallback {
+    private lateinit var binding: FragmentHomeBinding
+    private lateinit var mGoogleMap: GoogleMap
+    private lateinit var appPermission: RuntimePermission
+    private lateinit var loadingDialog: LoadingDialog
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
+    private var permissionRequest = mutableListOf<String>()
+    private var isLocationPermissionOk: Boolean = false
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
+    private var fusedLocationProviderClient: FusedLocationProviderClient?= null
+    private lateinit var currentLocation: Location
+    private  var currentMarkerOptions: Marker? = null
+    private lateinit var firebaseAuth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+
         }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false)
+    ): View {
+        binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HomeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HomeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        appPermission = AppPermissions()
+        loadingDialog = LoadingDialog(requireActivity())
+        firebaseAuth = Firebase.auth
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
+                permissions -> isLocationPermissionOk= permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+                && permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+            if (isLocationPermissionOk){
+                setUpGoogleMap()
+            }else{
+                Snackbar.make(binding.root, "Location permission was denied", Snackbar.LENGTH_LONG).show()
+            }
+        }
+        val mapFragment = (childFragmentManager.findFragmentById(R.id.homeMap) as SupportMapFragment?)
+        mapFragment?.getMapAsync(this)
+
+        for(placeModel in AppConstant.placesName){
+            val chip = Chip(requireContext())
+            chip.text = placeModel.name
+            chip.id = placeModel.id
+            chip.setPadding(0, 0, 0, 0)
+            chip.setTextColor(resources.getColor(R.color.white, null))
+            chip.chipBackgroundColor = resources.getColorStateList(R.color.black, null)
+            chip.chipIcon= ResourcesCompat.getDrawable(resources, placeModel.drawableId, null)
+            chip.isClickable = true
+            chip.isCheckedIconVisible = false
+            binding.placesGroup.addView(chip)
+        }
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        mGoogleMap = googleMap
+        when {
+            ActivityCompat.checkSelfPermission(
+                requireContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                isLocationPermissionOk = true
+                setUpGoogleMap()
+            }
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) -> {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Location Permission")
+                    .setMessage("Parakeet is requesting access to the location permission")
+                    .setPositiveButton("Ok"){
+                        _, _ -> requestLocation()
+                    }.create().show()
+            }
+            else -> {
+                requestLocation()
+            }
+        }
+    }
+
+    private fun requestLocation() {
+        permissionRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        permissionRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+        permissionLauncher.launch(permissionRequest.toTypedArray())
+    }
+
+    private fun setUpGoogleMap() {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        mGoogleMap.isMyLocationEnabled = true
+        mGoogleMap.uiSettings.isTiltGesturesEnabled = true
+        setUpLocationUpdate()
+    }
+
+    private fun setUpLocationUpdate() {
+
+        locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
+            .setMinUpdateIntervalMillis(5000)
+            .build()
+        locationCallback = object :LocationCallback(){
+            override fun onLocationResult(locationResult: LocationResult) {
+                super.onLocationResult(locationResult)
+                for (location in locationResult.locations){
+                    Log.d("TAG", "onLocationResult: ${location.longitude} ${location.latitude}")
                 }
             }
+
+            override fun onLocationAvailability(p0: LocationAvailability) {
+                super.onLocationAvailability(p0)
+            }
+        }
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        startLocationUpdates()
+    }
+
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            isLocationPermissionOk = true
+           return
+        }
+        fusedLocationProviderClient?.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )?.addOnCompleteListener{ task ->
+            if (task.isSuccessful){
+                Toast.makeText(requireContext(), "Location update start", Toast.LENGTH_SHORT).show()
+            }
+        }
+        getCurrentLocation()
+    }
+
+    private fun getCurrentLocation() {
+        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            isLocationPermissionOk = false
+             return
+        }
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+            currentLocation = it
+            moveCameraToLocation(currentLocation)
+        }
+    }
+
+    private fun moveCameraToLocation(location: Location) {
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(LatLng(
+            location.latitude,
+            location.longitude
+        ), 17f)
+        val markerOptions = MarkerOptions()
+            .position(LatLng(location.latitude, location.longitude))
+            .title("Current Location")
+            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+            .snippet(firebaseAuth.currentUser?.displayName)
+        currentMarkerOptions?.remove()
+        currentMarkerOptions= mGoogleMap.addMarker(markerOptions)
+        currentMarkerOptions?.tag = 703
+        mGoogleMap.animateCamera(cameraUpdate)
+    }
+    private fun stopLocationUpdates(){
+        fusedLocationProviderClient?.removeLocationUpdates(locationCallback)
+        Log.d("TAG", "stopLocationUpdates: Location Update Stop")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopLocationUpdates()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (fusedLocationProviderClient != null){
+            startLocationUpdates()
+            currentMarkerOptions?.remove()
+        }
     }
 }
