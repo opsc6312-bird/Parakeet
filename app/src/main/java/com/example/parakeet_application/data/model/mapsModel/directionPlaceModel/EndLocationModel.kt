@@ -1,4 +1,4 @@
-package com.example.parakeet_application.data.model.maps.directionPlaceModel
+package com.example.parakeet_application.data.model.mapsModel.directionPlaceModel
 
 data class EndLocationModel(
     var lat: Double? = null,

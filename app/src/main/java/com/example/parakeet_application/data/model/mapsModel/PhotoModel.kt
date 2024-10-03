@@ -1,4 +1,4 @@
-package com.example.parakeet_application.data.model.maps
+package com.example.parakeet_application.data.model.mapsModel
 
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter

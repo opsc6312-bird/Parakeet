@@ -98,6 +98,11 @@ class AppRepo {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
 
+    fun getPlaces(url: String): Flow<State<Any>> = flow<State<Any>> {
+
+    }.catch {
+        emit(State.failed(it.message!!))
+    }.flowOn(Dispatchers.IO)
 
 
 }

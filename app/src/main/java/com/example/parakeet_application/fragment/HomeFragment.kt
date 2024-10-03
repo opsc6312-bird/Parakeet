@@ -19,6 +19,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.location.LocationManagerCompat.getCurrentLocation
+import androidx.lifecycle.lifecycleScope
 import com.example.parakeet_application.R
 import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.databinding.FragmentHomeBinding
@@ -44,6 +45,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentHomeBinding
@@ -61,6 +63,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private  var currentMarkerOptions: Marker? = null
     private lateinit var firebaseAuth: FirebaseAuth
     private var isTrafficEnable: Boolean = false
+    private var radius = 1500
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -136,7 +139,25 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 show()
                 }
             }
+
+        binding.placesGroup.setOnCheckedChangeListener(){_, checkedId ->
+            if (checkedId != -1){
+                val placeModel = AppConstant.placesName[checkedId - 1]
+                binding.edtPlaceName.setText(placeModel.name)
+                getNearbyPlaces(placeModel.placeType)
+            }
+
         }
+    }
+
+    private fun getNearbyPlaces(placeType: String) {
+        val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${currentLocation.latitude},${currentLocation.longitude}&radius=${radius}&type=${placeType}&key=${resources.getString(R.string.API_KEY)}"
+
+        lifecycleScope.launch {
+
+        }
+    }
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap

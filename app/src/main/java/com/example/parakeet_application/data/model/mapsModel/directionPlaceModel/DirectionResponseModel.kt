@@ -1,4 +1,4 @@
-package com.example.parakeet_application.data.model.maps.directionPlaceModel
+package com.example.parakeet_application.data.model.mapsModel.directionPlaceModel
 
 data class DirectionResponseModel(
     var directionRouteModels: List<DirectionRouteModel>? = null,
