@@ -8,10 +8,12 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.Lifecycle
 
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.parakeet_application.MainActivity
 import com.example.parakeet_application.R
 import com.example.parakeet_application.databinding.ActivitySignUpBinding
 import com.example.parakeet_application.permissions.AppPermissions
@@ -70,37 +72,40 @@ class SignUpActivity : AppCompatActivity() {
         binding.txtLogin.setOnClickListener { onBackPressed() }
 
       binding.btnSignUp.setOnClickListener {
-
           lifecycleScope.launch {
               lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
                   if (areFieldReady()){
-                      if(image!=null){
-                          loginViewModel.signUp(email, password, username, image!!).collect{
+                    if(image == null){
+                          loginViewModel.signUp(email, password, username, image?:Uri.EMPTY).collect{
                               when(it){
                                   is State.Loading->{
                                       if(it.flag == true)
                                           loadingDialog.startLoading()
+                                      val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                                      startActivity(intent)
+                                      finish()
                                   }
-
-                                  is State.Success->{
+                                  is State.Success -> {
                                       loadingDialog.stopLoading()
-                                      Snackbar.make(binding.root, it.data.toString(), Snackbar.LENGTH_SHORT).show()
-
+                                      Snackbar.make(
+                                          binding.root,
+                                          it.data.toString(),
+                                          Snackbar.LENGTH_SHORT
+                                      ).show()
+                                     // onBackPressed()
+                                      val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                                      startActivity(intent)
+                                      finish()
                                   }
-
                                   is State.Failed->{
-
                                       loadingDialog.stopLoading()
                                       Snackbar.make(binding.root, it.error , Snackbar.LENGTH_SHORT).show()
-
                                   }
                               }
                           }
 
                       } else {
                           Snackbar.make(binding.root, "Please select image", Snackbar.LENGTH_SHORT).show()
-
-
                       }
                   }
               }
@@ -116,7 +121,7 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-    fun pickImage() {
+    private fun pickImage() {
         //CropImage.activity().setCropShape(CropImageView.CropShape.OVAL).start(this)
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
