@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,7 +45,7 @@ import com.google.firebase.ktx.Firebase
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentHomeBinding
-    private lateinit var mGoogleMap: GoogleMap
+    private var mGoogleMap: GoogleMap? = null
     private lateinit var appPermission: RuntimePermission
     private lateinit var loadingDialog: LoadingDialog
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
@@ -56,6 +57,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private lateinit var currentLocation: Location
     private  var currentMarkerOptions: Marker? = null
     private lateinit var firebaseAuth: FirebaseAuth
+    private var isTrafficEnable: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -100,7 +102,39 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             chip.isCheckedIconVisible = false
             binding.placesGroup.addView(chip)
         }
-    }
+        binding.enableTraffic.setOnClickListener(){
+             if(isTrafficEnable){
+                 mGoogleMap?.apply {
+                     isTrafficEnabled = true
+                     isTrafficEnable = true
+                 }
+             } else {
+                 mGoogleMap?.apply {
+                     isTrafficEnabled = true
+                     isTrafficEnable = true
+                 }
+             }
+        }
+        binding.currentLocation.setOnClickListener(){
+            getCurrentLocation()
+        }
+        binding.btnMapType.setOnClickListener(){
+            val popupMenu = PopupMenu(requireContext(), it)
+            popupMenu.apply {
+                menuInflater.inflate(R.menu.map_type_menu, menu)
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.btnNormal -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                        R.id.btnSatellite -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
+                        R.id.btnTerrain -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_TERRAIN
+
+                    }
+                    true
+                    }
+                show()
+                }
+            }
+        }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
@@ -147,8 +181,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         ) {
             return
         }
-        mGoogleMap.isMyLocationEnabled = true
-        mGoogleMap.uiSettings.isTiltGesturesEnabled = true
+        mGoogleMap?.isMyLocationEnabled = true
+        mGoogleMap?.uiSettings?.isTiltGesturesEnabled = true
         setUpLocationUpdate()
     }
 
@@ -228,9 +262,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             .snippet(firebaseAuth.currentUser?.displayName)
         currentMarkerOptions?.remove()
-        currentMarkerOptions= mGoogleMap.addMarker(markerOptions)
+        currentMarkerOptions= mGoogleMap?.addMarker(markerOptions)
         currentMarkerOptions?.tag = 703
-        mGoogleMap.animateCamera(cameraUpdate)
+        mGoogleMap?.animateCamera(cameraUpdate)
     }
     private fun stopLocationUpdates(){
         fusedLocationProviderClient?.removeLocationUpdates(locationCallback)
