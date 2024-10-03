@@ -59,7 +59,6 @@ class AppRepo {
             )
 
             createUser(userModel, auth)
-
             emit(State.success("Email verification sent"))
 
         }

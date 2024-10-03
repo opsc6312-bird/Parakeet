@@ -10,20 +10,13 @@
         android:id="@+id/main_activity"
         layout="@layout/activity_main" />
 
-    <!-- FragmentContainerView for dynamic fragment loading -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_container_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout="@layout/fragment_home" />
-
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:headerLayout="@layout/header_layout"
-        app:itemIconTint="@color/black"
-        app:itemTextColor="@color/black" />
-
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
+        app:menu="@menu/menu"/>
 </androidx.drawerlayout.widget.DrawerLayout>

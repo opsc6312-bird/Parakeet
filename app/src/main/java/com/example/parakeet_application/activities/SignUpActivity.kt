@@ -49,69 +49,69 @@ class SignUpActivity : AppCompatActivity() {
         loadingDialog = LoadingDialog(this)
 
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
-            result -> if (result.resultCode == RESULT_OK){
-                result.data?.data?.let { uri ->
-                    val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image.jpg"))
-                    val cropIntent = UCrop.of(uri, destinationUri)
-                        .withAspectRatio(1f, 1f)
-                        .withMaxResultSize(450, 450)
-                        .getIntent(this)
-                    cropImageLauncher.launch(cropIntent)
-                }
+                result -> if (result.resultCode == RESULT_OK){
+            result.data?.data?.let { uri ->
+                val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image.jpg"))
+                val cropIntent = UCrop.of(uri, destinationUri)
+                    .withAspectRatio(1f, 1f)
+                    .withMaxResultSize(450, 450)
+                    .getIntent(this)
+                cropImageLauncher.launch(cropIntent)
             }
         }
+        }
         cropImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
-            result -> if (result.resultCode == RESULT_OK){
-                val resultUri = UCrop.getOutput(result.data!!)
-                image = resultUri
-            }
+                result -> if (result.resultCode == RESULT_OK){
+            val resultUri = UCrop.getOutput(result.data!!)
+            image = resultUri
+        }
         }
 
         binding.btnBack.setOnClickListener { onBackPressed() }
 
         binding.txtLogin.setOnClickListener { onBackPressed() }
 
-      binding.btnSignUp.setOnClickListener {
-          lifecycleScope.launch {
-              lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
-                  if (areFieldReady()){
-                    if(image == null){
-                          loginViewModel.signUp(email, password, username, image?:Uri.EMPTY).collect{
-                              when(it){
-                                  is State.Loading->{
-                                      if(it.flag == true)
-                                          loadingDialog.startLoading()
-                                      val intent = Intent(this@SignUpActivity, MainActivity::class.java)
-                                      startActivity(intent)
-                                      finish()
-                                  }
-                                  is State.Success -> {
-                                      loadingDialog.stopLoading()
-                                      Snackbar.make(
-                                          binding.root,
-                                          it.data.toString(),
-                                          Snackbar.LENGTH_SHORT
-                                      ).show()
-                                     // onBackPressed()
-                                      val intent = Intent(this@SignUpActivity, MainActivity::class.java)
-                                      startActivity(intent)
-                                      finish()
-                                  }
-                                  is State.Failed->{
-                                      loadingDialog.stopLoading()
-                                      Snackbar.make(binding.root, it.error , Snackbar.LENGTH_SHORT).show()
-                                  }
-                              }
-                          }
+        binding.btnSignUp.setOnClickListener {
+            lifecycleScope.launch {
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+                    if (areFieldReady()){
+                        if(true){
+                            loginViewModel.signUp(email, password, username, image?:Uri.EMPTY).collect{
+                                when(it){
+                                    is State.Loading->{
+                                        if(it.flag == true)
+                                            loadingDialog.startLoading()
+                                        val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                                        startActivity(intent)
+                                        finish()
+                                    }
+                                    is State.Success -> {
+                                        loadingDialog.stopLoading()
+                                        Snackbar.make(
+                                            binding.root,
+                                            it.data.toString(),
+                                            Snackbar.LENGTH_SHORT
+                                        ).show()
+                                        // onBackPressed()
+                                        val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                                        startActivity(intent)
+                                        finish()
+                                    }
+                                    is State.Failed->{
+                                        loadingDialog.stopLoading()
+                                        Snackbar.make(binding.root, it.error , Snackbar.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
 
-                      } else {
-                          Snackbar.make(binding.root, "Please select image", Snackbar.LENGTH_SHORT).show()
-                      }
-                  }
-              }
-          }
+                        } else {
+                            Snackbar.make(binding.root, "Please select image", Snackbar.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
 
-      }
+        }
 
         binding.imgPick.setOnClickListener {
             if (appPermissions.isStorageOk(this))

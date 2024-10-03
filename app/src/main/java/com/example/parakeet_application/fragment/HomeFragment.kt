@@ -55,6 +55,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private var isLocationPermissionOk: Boolean = false
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
+    private lateinit var locationResult: LocationResult
     private var fusedLocationProviderClient: FusedLocationProviderClient?= null
     private lateinit var currentLocation: Location
     private  var currentMarkerOptions: Marker? = null
@@ -129,7 +130,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                         R.id.btnNormal -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
                         R.id.btnSatellite -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
                         R.id.btnTerrain -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_TERRAIN
-
                     }
                     true
                     }
@@ -247,10 +247,24 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             isLocationPermissionOk = false
              return
         }
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-            currentLocation = it
-            moveCameraToLocation(currentLocation)
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener {location ->
+           if (location != null){
+               currentLocation = location
+               moveCameraToLocation(currentLocation)
+           } else {
+               fusedLocationProviderClient.requestLocationUpdates(
+                   getLocationRequest(), locationCallback, Looper.getMainLooper()
+               )
+           }
+        }.addOnFailureListener(){
+            Snackbar.make(requireView(), "Failure to get location", Snackbar.LENGTH_SHORT).show()
         }
+    }
+
+    private fun getLocationRequest(): LocationRequest {
+        return LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
+            .setMinUpdateIntervalMillis(5000)
+            .build()
     }
 
     private fun moveCameraToLocation(location: Location) {
