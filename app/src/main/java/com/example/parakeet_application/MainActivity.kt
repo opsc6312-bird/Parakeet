@@ -69,7 +69,8 @@ class MainActivity : AppCompatActivity() {
         else
             super.onBackPressed()
     }
-    private fun gerUserData(){
+
+    private fun getUserData(){
         val database = Firebase.database.getReference("Users").child(firebaseAuth.uid!!)
         database.addValueEventListener(object: ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {

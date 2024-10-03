@@ -22,6 +22,7 @@ import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import com.example.parakeet_application.R
 import com.example.parakeet_application.data.constants.AppConstant
 import com.example.parakeet_application.databinding.FragmentHomeBinding
+import com.example.parakeet_application.utility.LoadingDialog
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
