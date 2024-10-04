@@ -58,45 +58,46 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
-    //Firebase authentication
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-analytics")
-
-    //analytics
     implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("androidx.drawerlayout:drawerlayout:1.2.0")
-
-    //Fonts
-    implementation ("com.google.android.gms:play-services-base:18.5.0")
-
-    //Performance
     implementation("com.google.firebase:firebase-perf")
 
-    //Circular ImageView library
+    // Google Services
+    implementation("com.google.android.gms:play-services-base:18.5.0")
+
+    // Circular ImageView & Image Cropper
     implementation("de.hdodenhof:circleimageview:3.1.0")
+    implementation("com.github.yalantis:ucrop:2.2.8")
 
-    //Image Cropper
-    implementation ("com.github.yalantis:ucrop:2.2.8")
-    implementation("com.github.bumptech.glide:glide:4.12.0")
+    // Glide for Image Loading
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
-    implementation ("io.github.florent37:shapeofview:1.4.7")
+    // Networking
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.10.0")
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor")
 
-    //ViewModels
+    // Kotlin Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // ViewModels & LiveData
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
     implementation("androidx.fragment:fragment-ktx:1.8.4")
-    implementation("com.squareup.retrofit2:retrofit:2.11.0");
-    implementation("com.squareup.retrofit2:converter-gson:2.10.0");
-    // define a BOM and its version
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
 
-    // define any required OkHttp artifacts without version
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    // Others
+    implementation("io.github.florent37:shapeofview:1.4.7")
+    implementation("io.coil-kt:coil:2.3.0")
+    implementation("androidx.activity:activity-ktx:1.9.2") // For ActivityResult API
+    implementation("androidx.core:core-ktx:1.13.1")
+
 }

@@ -1,10 +1,14 @@
 package com.example.parakeet_application.activities
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
+import android.widget.Button
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -12,6 +16,8 @@ import androidx.lifecycle.Lifecycle
 
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import coil.load
+import com.bumptech.glide.Glide
 import com.example.parakeet_application.R
 import com.example.parakeet_application.databinding.ActivitySignUpBinding
 import com.example.parakeet_application.permissions.AppPermissions
@@ -20,6 +26,7 @@ import com.example.parakeet_application.utility.State
 import com.example.parakeet_application.viewModel.LoginViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.yalantis.ucrop.UCrop
+import de.hdodenhof.circleimageview.CircleImageView
 
 import kotlinx.coroutines.launch
 import java.io.File
@@ -37,6 +44,8 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
     private lateinit var cropImageLauncher: ActivityResultLauncher<Intent>
 
+    private lateinit var getImageLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -47,7 +56,7 @@ class SignUpActivity : AppCompatActivity() {
         appPermissions = AppPermissions()
         loadingDialog = LoadingDialog(this)
 
-        pickImageLauncher =
+       /* pickImageLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
                     result.data?.data?.let { uri ->
@@ -64,10 +73,35 @@ class SignUpActivity : AppCompatActivity() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
                     val resultUri = UCrop.getOutput(result.data!!)
-                    image = resultUri
+                    resultUri?.let {
+                        image = it
+                        binding.imgPick.load(image){
+                            placeholder(R.drawable.image)
+                            error(R.drawable.ic_person)
+                        }
+                    }
+                }
+
+            }
+*/
+        getImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val imageUri: Uri? = result.data?.data
+                imageUri?.let {
+                    try {
+                        val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it)
+                        binding.imgPick.setImageBitmap(bitmap)
+                        image = it
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
-
+        }
+        binding.buttonSelectImage.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            getImageLauncher.launch(intent)
+        }
         binding.btnBack.setOnClickListener { onBackPressed() }
 
         binding.btnLogin.setOnClickListener {
@@ -77,15 +111,15 @@ class SignUpActivity : AppCompatActivity() {
             )
             startActivity(intent)
             finish()
-             }
+        }
 
 
         binding.btnSignUp.setOnClickListener {
             lifecycleScope.launch {
                 lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                     if (areFieldReady()) {
-                        if (true) {
-                            loginViewModel.signUp(email, password, username, image ?: Uri.EMPTY)
+                        if (image != null) {
+                            loginViewModel.signUp(email, password, username, image!!)
                                 .collect {
                                     when (it) {
                                         is State.Loading -> {
@@ -93,7 +127,7 @@ class SignUpActivity : AppCompatActivity() {
                                                 loadingDialog.startLoading()
                                             val intent = Intent(
                                                 this@SignUpActivity,
-                                                MainActivity::class.java
+                                                LoginActivity::class.java
                                             )
                                             startActivity(intent)
                                             finish()
@@ -106,10 +140,10 @@ class SignUpActivity : AppCompatActivity() {
                                                 it.data.toString(),
                                                 Snackbar.LENGTH_SHORT
                                             ).show()
-                                            // onBackPressed()
+                                             onBackPressed()
                                             val intent = Intent(
                                                 this@SignUpActivity,
-                                                MainActivity::class.java
+                                                LoginActivity::class.java
                                             )
                                             startActivity(intent)
                                             finish()
@@ -137,7 +171,6 @@ class SignUpActivity : AppCompatActivity() {
                 }
             }
             binding.btnSignUp.setOnClickListener {
-
                 lifecycleScope.launch {
                     lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                         if (areFieldReady()) {
@@ -166,7 +199,6 @@ class SignUpActivity : AppCompatActivity() {
                                                 it.error,
                                                 Snackbar.LENGTH_SHORT
                                             ).show()
-
                                         }
                                     }
                                 }
@@ -236,6 +268,6 @@ class SignUpActivity : AppCompatActivity() {
     private fun pickImage() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
-        pickImageLauncher.launch(intent)
+        getImageLauncher.launch(intent)
     }
 }
