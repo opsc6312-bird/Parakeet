@@ -83,7 +83,7 @@ class AppRepo {
     private suspend fun createUser(userModel: UserModel, auth: FirebaseAuth) {
         val firebase = Firebase.database.getReference("Users")
         firebase.child(auth.uid!!).setValue(userModel).await()
-        val profileChangeRequest = UserProfileChangeRequest.Builder()
+         val profileChangeRequest = UserProfileChangeRequest.Builder()
             .setDisplayName(userModel.username)
             .setPhotoUri(Uri.parse(userModel.image))
             .build()
