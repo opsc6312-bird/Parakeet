@@ -17,8 +17,6 @@ import androidx.lifecycle.Lifecycle
 
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import coil.load
-import com.bumptech.glide.Glide
 import com.example.parakeet_application.R
 import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.databinding.ActivitySignUpBinding
@@ -138,49 +136,7 @@ class SignUpActivity : AppCompatActivity() {
                     }
                 }
             }
-            binding.btnSignUp.setOnClickListener {
-                lifecycleScope.launch {
-                    lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                        if (areFieldReady()) {
-                            if (image != null) {
-                                loginViewModel.signUp(email, password, username, image!!).collect {
-                                    when (it) {
-                                        is State.Loading -> {
-                                            if (it.flag == true)
-                                                loadingDialog.startLoading()
-                                        }
 
-                                        is State.Success -> {
-                                            loadingDialog.stopLoading()
-                                            Snackbar.make(
-                                                binding.root,
-                                                it.data.toString(),
-                                                Snackbar.LENGTH_SHORT
-                                            ).show()
-                                        }
-
-                                        is State.Failed -> {
-                                            loadingDialog.stopLoading()
-                                            Snackbar.make(
-                                                binding.root,
-                                                it.error,
-                                                Snackbar.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    }
-                                }
-                            } else {
-                                Snackbar.make(
-                                    binding.root,
-                                    "Please select image",
-                                    Snackbar.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    }
-                }
-
-            }
 
             binding.imgPick.setOnClickListener {
                 if (appPermissions.isStorageOk(this))
