@@ -102,12 +102,6 @@ class SignUpActivity : AppCompatActivity() {
                                         is State.Loading -> {
                                             if (it.flag == true)
                                                 loadingDialog.startLoading()
-                                            val intent = Intent(
-                                                this@SignUpActivity,
-                                                MainActivity::class.java
-                                            )
-                                            startActivity(intent)
-                                            finish()
                                         }
 
                                         is State.Success -> {
