@@ -17,9 +17,6 @@ import androidx.lifecycle.Lifecycle
 
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import coil.load
-import com.bumptech.glide.Glide
-import com.example.parakeet_application.Manifest
 import com.example.parakeet_application.R
 import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.databinding.ActivitySignUpBinding
