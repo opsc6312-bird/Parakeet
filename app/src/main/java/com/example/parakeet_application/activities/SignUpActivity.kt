@@ -13,7 +13,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.parakeet_application.R
-import com.example.parakeet_application.data.model.UserModel
 import com.example.parakeet_application.databinding.ActivitySignUpBinding
 import com.example.parakeet_application.permissions.AppPermissions
 import com.example.parakeet_application.utility.LoadingDialog
@@ -39,6 +38,7 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var cropImageLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
@@ -46,103 +46,7 @@ class SignUpActivity : AppCompatActivity() {
         setContentView(binding.root)
         appPermissions = AppPermissions()
         loadingDialog = LoadingDialog(this)
-        initImagePicker()
-        binding.btnBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
-        binding.btnLogin.setOnClickListener {
-            navigateToLogin()
-        }
-
-        binding.btnSignUp.setOnClickListener {
-
-            lifecycleScope.launch {
-                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    if (areFieldReady()) {
-                        if (image == null) {
-
-                            loginViewModel.signUp(email, password, username, image!!).collect {
-                                when (it) {
-                                    is State.Loading -> {
-                                        if (it.flag == true)
-                                            loadingDialog.startLoading()
-                                    }
-
-                                    is State.Success -> {
-                                        loadingDialog.stopLoading()
-                                        Snackbar.make(
-                                            binding.root,
-                                            it.data.toString(),
-                                            Snackbar.LENGTH_SHORT
-                                        ).show()
-                                    }
-
-                                    is State.Failed -> {
-                                        loadingDialog.stopLoading()
-                                        Snackbar.make(
-                                            binding.root,
-                                            it.error,
-                                            Snackbar.LENGTH_SHORT
-                                        ).show()
-
-                                    }
-                                }
-                            }
-                        } else {
-                            Snackbar.make(
-                                binding.root,
-                                "Please select image",
-                                Snackbar.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-            }
-
-        }
-
-        binding.imgPick.setOnClickListener {
-            if (appPermissions.isStorageOk(this))
-                pickImage()
-            else
-                appPermissions.requestStoragePermission(this)
-        }
-
-        binding.btnSignUp.setOnClickListener {
-            signUpUser()
-        }
-
-    }
-    private fun areFieldReady(): Boolean {
-        username = binding.edtUsername.text.trim().toString()
-        email = binding.edtEmail.text.trim().toString()
-        password = binding.edtPassword.text.trim().toString()
-
-        var flag = false
-        when {
-            username.isEmpty() -> {
-                binding.edtUsername.error = "Field is required"
-                flag = true
-            }
-
-            email.isEmpty() -> {
-                binding.edtEmail.error = "Field is required"
-                flag = true
-            }
-
-            password.isEmpty() -> {
-                binding.edtPassword.error = "Field is required"
-                flag = true
-            }
-
-            password.length < 8 -> {
-                binding.edtPassword.error = "Minimum 8 characters"
-                flag = true
-            }
-        }
-        return !flag
-    }
-
-    private fun initImagePicker(){
         pickImageLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
@@ -164,57 +68,174 @@ class SignUpActivity : AppCompatActivity() {
                 }
             }
 
-    }
+        binding.btnBack.setOnClickListener { onBackPressed() }
 
-    private fun signUpUser(){
-        if(!areFieldReady()){
-            Snackbar.make(binding.root, "Please fill in all fields", Snackbar.LENGTH_SHORT).show()
-            return
-        }
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                loginViewModel.signUp(email, password, username, image?: Uri.EMPTY)
-                    .collect { state ->
-                        when (state) {
-                            is State.Loading -> {
-                                if (state.flag == true)
-                                    loadingDialog.startLoading()
-                            }
+        binding.btnLogin.setOnClickListener {
+            val intent = Intent(
+                this@SignUpActivity,
+                LoginActivity::class.java
+            )
+            startActivity(intent)
+            finish()
+             }
 
-                            is State.Success -> {
-                                loadingDialog.stopLoading()
+
+        binding.btnSignUp.setOnClickListener {
+            lifecycleScope.launch {
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    if (areFieldReady()) {
+                        if (true) {
+                            loginViewModel.signUp(email, password, username, image ?: Uri.EMPTY)
+                                .collect {
+                                    when (it) {
+                                        is State.Loading -> {
+                                            if (it.flag == true)
+                                                loadingDialog.startLoading()
+                                            val intent = Intent(
+                                                this@SignUpActivity,
+                                                MainActivity::class.java
+                                            )
+                                            startActivity(intent)
+                                            finish()
+                                        }
+
+                                        is State.Success -> {
+                                            loadingDialog.stopLoading()
+                                            Snackbar.make(
+                                                binding.root,
+                                                it.data.toString(),
+                                                Snackbar.LENGTH_SHORT
+                                            ).show()
+                                            // onBackPressed()
+                                            val intent = Intent(
+                                                this@SignUpActivity,
+                                                MainActivity::class.java
+                                            )
+                                            startActivity(intent)
+                                            finish()
+                                        }
+
+                                        is State.Failed -> {
+                                            loadingDialog.stopLoading()
+                                            Snackbar.make(
+                                                binding.root,
+                                                it.error,
+                                                Snackbar.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                }
+
+                        } else {
+                            Snackbar.make(
+                                binding.root,
+                                "Please select image",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }
+            binding.btnSignUp.setOnClickListener {
+
+                lifecycleScope.launch {
+                    lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        if (areFieldReady()) {
+                            if (image == null) {
+
+                                loginViewModel.signUp(email, password, username, image!!).collect {
+                                    when (it) {
+                                        is State.Loading -> {
+                                            if (it.flag == true)
+                                                loadingDialog.startLoading()
+                                        }
+
+                                        is State.Success -> {
+                                            loadingDialog.stopLoading()
+                                            Snackbar.make(
+                                                binding.root,
+                                                it.data.toString(),
+                                                Snackbar.LENGTH_SHORT
+                                            ).show()
+                                        }
+
+                                        is State.Failed -> {
+                                            loadingDialog.stopLoading()
+                                            Snackbar.make(
+                                                binding.root,
+                                                it.error,
+                                                Snackbar.LENGTH_SHORT
+                                            ).show()
+
+                                        }
+                                    }
+                                }
+                            } else {
                                 Snackbar.make(
                                     binding.root,
-                                    state.data.toString(),
-                                    Snackbar.LENGTH_SHORT
-                                ).show()
-                                navigateToLogin()
-                            }
-
-                            is State.Failed -> {
-                                loadingDialog.stopLoading()
-                                Snackbar.make(
-                                    binding.root,
-                                    state.error,
+                                    "Please select image",
                                     Snackbar.LENGTH_SHORT
                                 ).show()
                             }
                         }
                     }
+                }
+
             }
 
+            binding.imgPick.setOnClickListener {
+                if (appPermissions.isStorageOk(this))
+                    pickImage()
+                else
+                    appPermissions.requestStoragePermission(this)
+            }
         }
-    }
 
+    }
+    private fun areFieldReady(): Boolean {
+        username = binding.edtUsername.text.trim().toString()
+        email = binding.edtEmail.text.trim().toString()
+        password = binding.edtPassword.text.trim().toString()
+
+        var view: View? = null
+        var flag = false
+
+        when {
+            username.isEmpty() -> {
+                binding.edtUsername.error = "Field is required"
+                view = binding.edtUsername
+                flag = true
+            }
+
+            email.isEmpty() -> {
+                binding.edtEmail.error = "Field is required"
+                view = binding.edtEmail
+                flag = true
+            }
+
+            password.isEmpty() -> {
+                binding.edtPassword.error = "Field is required"
+                view = binding.edtPassword
+                flag = true
+            }
+
+            password.length < 8 -> {
+                binding.edtPassword.error = "Minimum 8 characters"
+                view = binding.edtPassword
+                flag = true
+            }
+        }
+
+        return if (flag) {
+            view?.requestFocus()
+            false
+        } else
+            true
+
+    }
     private fun pickImage() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
         pickImageLauncher.launch(intent)
-    }
-
-    private fun navigateToLogin(){
-        val intent = Intent(this@SignUpActivity, LoginActivity::class.java)
-        startActivity(intent)
-        finish()
     }
 }
