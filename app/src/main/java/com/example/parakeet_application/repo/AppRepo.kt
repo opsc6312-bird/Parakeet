@@ -55,7 +55,7 @@ class AppRepo {
         data.user?.let {
             val path = uploadImage(it.uid, image).toString()
             val userModel = UserModel(
-                email, username, path
+                email, username
             )
 
             createUser(userModel, auth)
@@ -82,7 +82,7 @@ class AppRepo {
         firebase.child(auth.uid!!).setValue(userModel).await()
         val profileChangeRequest = UserProfileChangeRequest.Builder()
             .setDisplayName(userModel.username)
-            .setPhotoUri(Uri.parse(userModel.image))
+//            .setPhotoUri(Uri.parse(userModel.image))
             .build()
         auth.currentUser?.apply {
             updateProfile(profileChangeRequest).await()
