@@ -135,9 +135,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                  }
              }
         }
-        binding.currentLocation.setOnClickListener(){
-            getCurrentLocation()
-        }
+        binding.currentLocation.setOnClickListener(){ getCurrentLocation() }
+
         binding.btnMapType.setOnClickListener(){
             val popupMenu = PopupMenu(requireContext(), it)
             popupMenu.apply {
@@ -154,13 +153,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 }
             }
 
-        binding.placesGroup.setOnCheckedChangeListener(){_, checkedId ->
-            if (checkedId != -1){
+       binding.placesGroup.setOnCheckedStateChangeListener(){group, checkedIds ->
+            if (checkedIds.isNotEmpty()){
+                val checkedId = checkedIds[0]
                 val placeModel = AppConstant.placesName[checkedId - 1]
                 binding.edtPlaceName.setText(placeModel.name)
                 getNearByPlaces(placeModel.placeType)
             }
-
         }
     }
 
@@ -206,12 +205,19 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     private fun addMarker(googlePlaceModel: GooglePlaceModel, position: Int) {
         googlePlaceModel.geometry?.location?.let { location ->
-            val markerOptions = MarkerOptions()
-                .position(LatLng(location.lat!!, location.lng!!))
-                .title(googlePlaceModel.name)
-                .snippet(googlePlaceModel.vicinity)
-            markerOptions.icon(getCustomIcon())
-            mGoogleMap?.addMarker(markerOptions)?.tag = position
+            val lat = location.lat
+            val lng = location.lng
+            if (lat != null && lng != null && lat != 0.0 && lng != 0.0){
+                val markerOptions = MarkerOptions()
+                    .position(LatLng(lat, lng))
+                    .title(googlePlaceModel.name)
+                    .snippet(googlePlaceModel.vicinity)
+                markerOptions.icon(getCustomIcon())
+                mGoogleMap?.addMarker(markerOptions)?.tag = position
+            } else {
+                Log.e("TAG", "Invalid location for place: ${googlePlaceModel.name} (lat: $lat, lng: $lng)")
+            }
+
         }?: run {
             Log.e("TAG", "Invalid location for place: ${googlePlaceModel.name}")
         }
