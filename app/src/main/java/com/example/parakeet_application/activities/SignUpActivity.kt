@@ -17,6 +17,8 @@ import androidx.lifecycle.Lifecycle
 
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import coil.load
+import com.bumptech.glide.Glide
 import com.example.parakeet_application.R
 import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.databinding.ActivitySignUpBinding
@@ -41,13 +43,6 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var password: String
     private var image: Uri? = null
     private val loginViewModel: LoginViewModel by viewModels()
-    private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
-
-    companion object  {
-        private const val READ_STORAGE_PERMISSION_CODE = 1
-        private const val PICK_IMAGE_REQUEST_CODE = 2
-    }
-
 
     private lateinit var getImageLauncher: ActivityResultLauncher<Intent>
 
@@ -61,20 +56,22 @@ class SignUpActivity : AppCompatActivity() {
         appPermissions = AppPermissions()
         loadingDialog = LoadingDialog(this)
 
-     getImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK && result.data != null) {
-                val imageUri: Uri? = result.data?.data
-                imageUri?.let {
-                    try {
-                        val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it)
-                        binding.imgPick.setImageBitmap(bitmap)
-                        image = it
-                    } catch (e: Exception) {
-                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+        getImageLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK && result.data != null) {
+                    val imageUri: Uri? = result.data?.data
+                    imageUri?.let {
+                        try {
+                            val bitmap: Bitmap =
+                                MediaStore.Images.Media.getBitmap(contentResolver, it)
+                            binding.imgPick.setImageBitmap(bitmap)
+                            image = it
+                        } catch (e: Exception) {
+                            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
-        }
         binding.buttonSelectImage.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             getImageLauncher.launch(intent)
@@ -152,6 +149,7 @@ class SignUpActivity : AppCompatActivity() {
                                             if (it.flag == true)
                                                 loadingDialog.startLoading()
                                         }
+
                                         is State.Success -> {
                                             loadingDialog.stopLoading()
                                             Snackbar.make(
@@ -183,28 +181,6 @@ class SignUpActivity : AppCompatActivity() {
                 }
 
             }
-        }
-
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == AppConstant.STORAGE_REQUEST_CODE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                pickImage()
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    "Storage Permission Denied",
-                    Snackbar.LENGTH_SHORT
-                ).show()
-            }
-        }
-
 
             binding.imgPick.setOnClickListener {
                 if (appPermissions.isStorageOk(this))
@@ -213,7 +189,7 @@ class SignUpActivity : AppCompatActivity() {
                     appPermissions.requestStoragePermission(this)
             }
         }
-
+    }
 
     private fun areFieldReady(): Boolean {
         username = binding.edtUsername.text.trim().toString()
@@ -259,6 +235,6 @@ class SignUpActivity : AppCompatActivity() {
     private fun pickImage() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
-        pickImageLauncher.launch(intent)
+        getImageLauncher.launch(intent)
     }
 }
