@@ -7,6 +7,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
+import com.bumptech.glide.Glide
 import com.example.parakeet_application.R
 import com.example.parakeet_application.data.model.UserModel
 import com.example.parakeet_application.databinding.ActivityMainBinding
@@ -58,13 +59,11 @@ class MainActivity : AppCompatActivity() {
             navController
         )
        val headerLayout = navigationDrawerLayoutBinding.navView.getHeaderView(0)
-
+        getUserData()
         imgHeader = headerLayout.findViewById(R.id.imgHeader)
         txtName = headerLayout.findViewById(R.id.txtHeaderName)
         txtEmail = headerLayout.findViewById(R.id.txtHeaderEmail)
-
-        getUserData()
-        }
+    }
 
     override fun onBackPressed() {
         if (navigationDrawerLayoutBinding.navDrawer.isDrawerOpen(GravityCompat.START))
@@ -83,9 +82,14 @@ class MainActivity : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()){
                         val userModel = snapshot.getValue(UserModel::class.java)
-                        //Glide.with(this@MainActivity).load(userModel?.image).into(imgHeader)
-                        txtName.text = userModel?.username
+                        Glide.with(this@MainActivity).load(userModel?.image).into(imgHeader)
+                        txtName.text = firebaseAuth.currentUser?.email
                         txtEmail.text = userModel?.email
+                    }
+                    else {
+                      //  Glide.with(this@MainActivity).load(?.image).into(imgHeader)
+                        txtName.text = firebaseAuth.currentUser?.uid
+                        txtEmail.text = firebaseAuth.currentUser?.email
                     }
                 }
 

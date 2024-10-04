@@ -140,6 +140,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
             chip.isCheckedIconVisible = false
             binding.placesGroup.addView(chip)
         }
+        binding.placesGroup.check(AppConstant.placesName[1].id)
+
         binding.enableTraffic.setOnClickListener() {
             if (isTrafficEnable) {
                 mGoogleMap?.apply {

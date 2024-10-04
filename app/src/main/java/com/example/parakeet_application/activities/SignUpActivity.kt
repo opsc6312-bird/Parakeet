@@ -56,35 +56,7 @@ class SignUpActivity : AppCompatActivity() {
         appPermissions = AppPermissions()
         loadingDialog = LoadingDialog(this)
 
-       /* pickImageLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    result.data?.data?.let { uri ->
-                        val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image.jpg"))
-                        val cropIntent = UCrop.of(uri, destinationUri)
-                            .withAspectRatio(1f, 1f)
-                            .withMaxResultSize(450, 450)
-                            .getIntent(this)
-                        cropImageLauncher.launch(cropIntent)
-                    }
-                }
-            }
-        cropImageLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    val resultUri = UCrop.getOutput(result.data!!)
-                    resultUri?.let {
-                        image = it
-                        binding.imgPick.load(image){
-                            placeholder(R.drawable.image)
-                            error(R.drawable.ic_person)
-                        }
-                    }
-                }
-
-            }
-*/
-        getImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+     getImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
                 val imageUri: Uri? = result.data?.data
                 imageUri?.let {
@@ -175,7 +147,6 @@ class SignUpActivity : AppCompatActivity() {
                     lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                         if (areFieldReady()) {
                             if (image == null) {
-
                                 loginViewModel.signUp(email, password, username, image!!).collect {
                                     when (it) {
                                         is State.Loading -> {

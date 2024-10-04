@@ -36,7 +36,6 @@ class AppRepo {
             if (auth.currentUser?.isEmailVerified!!) {
                 emit(State.success("Login Successfully"))
             } else {
-                auth.currentUser?.sendEmailVerification()?.await()
                 emit(State.failed("Verify email first"))
             }
         }
@@ -54,20 +53,21 @@ class AppRepo {
     ): Flow<State<Any>> = flow<State<Any>> {
         emit(State.loading(true))
         val auth = Firebase.auth
-        val data = auth.createUserWithEmailAndPassword(email, password).await()
-        data.user?.let {
-            val path = uploadImage(it.uid, image).toString()
-            val userModel = UserModel(
-                email, username, path
-            )
-
-            createUser(userModel, auth)
-            emit(State.success("Email verification sent"))
-
+        try {
+            val data = auth.createUserWithEmailAndPassword(email, password).await()
+            data.user?.let {
+                val path = uploadImage(it.uid, image).toString()
+                var userModel = UserModel(
+                    email, username, path
+                )
+                createUser(userModel, auth)
+                auth.currentUser?.sendEmailVerification()?.await()
+                emit(State.success("Email verification sent"))
+            }?: throw Exception("User creation failed")
+        }catch(e: Exception){
+            Log.e("SignUp", "Error: ${e.message}")
+            emit(State.failed(e.message!!))
         }
-
-    }.catch {
-        emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
 
     private suspend fun uploadImage(uid: String, image: Uri): Uri {
@@ -81,15 +81,22 @@ class AppRepo {
     }
 
     private suspend fun createUser(userModel: UserModel, auth: FirebaseAuth) {
-        val firebase = Firebase.database.getReference("Users")
-        firebase.child(auth.uid!!).setValue(userModel).await()
-        val profileChangeRequest = UserProfileChangeRequest.Builder()
-            .setDisplayName(userModel.username)
-            .setPhotoUri(Uri.parse(userModel.image))
-            .build()
-        auth.currentUser?.apply {
-            updateProfile(profileChangeRequest).await()
-            sendEmailVerification().await()
+        try {
+            val firebase = Firebase.database.getReference("Users")
+            firebase.child(auth.uid!!).setValue(userModel).await()
+
+            val profileChangeRequest = UserProfileChangeRequest.Builder()
+                .setDisplayName(userModel.username)
+                .setPhotoUri(Uri.parse(userModel.image))
+                .build()
+
+            auth.currentUser?.apply {
+                updateProfile(profileChangeRequest).await()
+                sendEmailVerification().await()
+            }
+        } catch (e: Exception) {
+            Log.e("CreateUser", "Error: ${e.message}")
+            throw e
         }
     }
 
