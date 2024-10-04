@@ -78,9 +78,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     private var isLocationPermissionOk: Boolean = false
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
-    private var fusedLocationProviderClient: FusedLocationProviderClient?= null
+    private var fusedLocationProviderClient: FusedLocationProviderClient? = null
     private lateinit var currentLocation: Location
-    private  var currentMarkerOptions: Marker? = null
+    private var currentMarkerOptions: Marker? = null
     private lateinit var firebaseAuth: FirebaseAuth
     private var isTrafficEnable: Boolean = false
     private var radius = 1500
@@ -109,46 +109,53 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         loadingDialog = LoadingDialog(requireActivity())
         firebaseAuth = Firebase.auth
         googlePlaceList = ArrayList()
-        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
-                permissions -> isLocationPermissionOk= permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-                && permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
-            if (isLocationPermissionOk){
-                setUpGoogleMap()
-            }else{
-                Snackbar.make(binding.root, "Location permission was denied", Snackbar.LENGTH_LONG).show()
+        permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                isLocationPermissionOk =
+                    permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+                            && permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+                if (isLocationPermissionOk) {
+                    setUpGoogleMap()
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        "Location permission was denied",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
             }
-        }
-        val mapFragment = (childFragmentManager.findFragmentById(R.id.homeMap) as SupportMapFragment?)
+        val mapFragment =
+            (childFragmentManager.findFragmentById(R.id.homeMap) as SupportMapFragment?)
         mapFragment?.getMapAsync(this)
 
-        for(placeModel in AppConstant.placesName){
+        for (placeModel in AppConstant.placesName) {
             val chip = Chip(requireContext())
             chip.text = placeModel.name
             chip.id = placeModel.id
             chip.setPadding(0, 0, 0, 0)
             chip.setTextColor(resources.getColor(R.color.white, null))
             chip.chipBackgroundColor = resources.getColorStateList(R.color.black, null)
-            chip.chipIcon= ResourcesCompat.getDrawable(resources, placeModel.drawableId, null)
+            chip.chipIcon = ResourcesCompat.getDrawable(resources, placeModel.drawableId, null)
             chip.isClickable = true
             chip.isCheckedIconVisible = false
             binding.placesGroup.addView(chip)
         }
-        binding.enableTraffic.setOnClickListener(){
-             if(isTrafficEnable){
-                 mGoogleMap?.apply {
-                     isTrafficEnabled = true
-                     isTrafficEnable = true
-                 }
-             } else {
-                 mGoogleMap?.apply {
-                     isTrafficEnabled = true
-                     isTrafficEnable = true
-                 }
-             }
+        binding.enableTraffic.setOnClickListener() {
+            if (isTrafficEnable) {
+                mGoogleMap?.apply {
+                    isTrafficEnabled = true
+                    isTrafficEnable = true
+                }
+            } else {
+                mGoogleMap?.apply {
+                    isTrafficEnabled = true
+                    isTrafficEnable = true
+                }
+            }
         }
-        binding.currentLocation.setOnClickListener(){ getCurrentLocation() }
+        binding.currentLocation.setOnClickListener() { getCurrentLocation() }
 
-        binding.btnMapType.setOnClickListener(){
+        binding.btnMapType.setOnClickListener() {
             val popupMenu = PopupMenu(requireContext(), it)
             popupMenu.apply {
                 menuInflater.inflate(R.menu.map_type_menu, menu)
@@ -159,13 +166,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                         R.id.btnTerrain -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_TERRAIN
                     }
                     true
-                    }
-                show()
                 }
+                show()
             }
+        }
 
-       binding.placesGroup.setOnCheckedStateChangeListener(){group, checkedIds ->
-            if (checkedIds.isNotEmpty()){
+        binding.placesGroup.setOnCheckedStateChangeListener() { group, checkedIds ->
+            if (checkedIds.isNotEmpty()) {
                 val checkedId = checkedIds[0]
                 val placeModel = AppConstant.placesName[checkedId - 1]
                 binding.edtPlaceName.setText(placeModel.name)
@@ -185,46 +192,51 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                 resources.getString(R.string.API_KEY))
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
-                    locationViewModel.getNearByPlaces(url).collect{
-                        when(it) {
-                            is State.Failed -> {
-                                loadingDialog.stopLoading()
-                                Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG).show()
-                            }
-                            is State.Loading -> {
-                                if (it.flag == true){
-                                    loadingDialog.startLoading()
-                                }
-                            }
-                            is State.Success -> {
-                                loadingDialog.stopLoading()
-                                val googleResponseModel: GoogleResponseModel = it.data as GoogleResponseModel
-                                if (!googleResponseModel.googlePlaceModelList.isNullOrEmpty()){
-                                    googlePlaceList.clear()
-                                    mGoogleMap?.clear()
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                locationViewModel.getNearByPlaces(url).collect {
+                    when (it) {
+                        is State.Failed -> {
+                            loadingDialog.stopLoading()
+                            Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG).show()
+                        }
 
-                                    for ((index, place) in googleResponseModel.googlePlaceModelList.withIndex()){
-                                        place.saved = userSavedLocationId.contains(googleResponseModel.googlePlaceModelList[index].placeId)
-                                        googlePlaceList.add(place)
-                                        addMarker(place, index)
-                                    }
-                                    googlePlaceAdapter.setGooglePlaces(googlePlaceList)
-                                }else{ mGoogleMap?.clear()
-                                    googlePlaceList.clear()
+                        is State.Loading -> {
+                            if (it.flag == true) {
+                                loadingDialog.startLoading()
+                            }
+                        }
+
+                        is State.Success -> {
+                            loadingDialog.stopLoading()
+                            val googleResponseModel: GoogleResponseModel =
+                                it.data as GoogleResponseModel
+                            if (!googleResponseModel.googlePlaceModelList.isNullOrEmpty()) {
+                                googlePlaceList.clear()
+                                mGoogleMap?.clear()
+
+                                for ((index, place) in googleResponseModel.googlePlaceModelList.withIndex()) {
+                                    place.saved =
+                                        userSavedLocationId.contains(googleResponseModel.googlePlaceModelList[index].placeId)
+                                    googlePlaceList.add(place)
+                                    addMarker(place, index)
                                 }
+                                googlePlaceAdapter.setGooglePlaces(googlePlaceList)
+                            } else {
+                                mGoogleMap?.clear()
+                                googlePlaceList.clear()
                             }
                         }
                     }
                 }
             }
         }
+    }
 
     private fun addMarker(googlePlaceModel: GooglePlaceModel, position: Int) {
         googlePlaceModel.geometry?.location?.let { location ->
             val lat = location.lat
             val lng = location.lng
-            if (lat != null && lng != null && lat != 0.0 && lng != 0.0){
+            if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
                 val markerOptions = MarkerOptions()
                     .position(LatLng(lat, lng))
                     .title(googlePlaceModel.name)
@@ -232,10 +244,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                 markerOptions.icon(getCustomIcon())
                 mGoogleMap?.addMarker(markerOptions)?.tag = position
             } else {
-                Log.e("TAG", "Invalid location for place: ${googlePlaceModel.name} (lat: $lat, lng: $lng)")
+                Log.e(
+                    "TAG",
+                    "Invalid location for place: ${googlePlaceModel.name} (lat: $lat, lng: $lng)"
+                )
             }
 
-        }?: run {
+        } ?: run {
             Log.e("TAG", "Invalid location for place: ${googlePlaceModel.name}")
         }
     }
@@ -245,7 +260,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         background?.setTint(resources.getColor(R.color.purple_700, null))
         background?.setBounds(0, 0, background.intrinsicWidth, background.intrinsicHeight)
         val bitmap = Bitmap.createBitmap(
-            background?.intrinsicWidth?:0, background?.intrinsicHeight?:0,
+            background?.intrinsicWidth ?: 0, background?.intrinsicHeight ?: 0,
             Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(bitmap)
@@ -263,6 +278,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                 isLocationPermissionOk = true
                 setUpGoogleMap()
             }
+
             ActivityCompat.shouldShowRequestPermissionRationale(
                 requireActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -270,10 +286,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                 AlertDialog.Builder(requireContext())
                     .setTitle("Location Permission")
                     .setMessage("Parakeet is requesting access to the location permission")
-                    .setPositiveButton("Ok"){
-                        _, _ -> requestLocation()
+                    .setPositiveButton("Ok") { _, _ ->
+                        requestLocation()
                     }.create().show()
             }
+
             else -> {
                 requestLocation()
             }
@@ -307,10 +324,10 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
             .setMinUpdateIntervalMillis(5000)
             .build()
-        locationCallback = object :LocationCallback(){
+        locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
-                for (location in locationResult.locations){
+                for (location in locationResult.locations) {
                     Log.d("TAG", "onLocationResult: ${location.longitude} ${location.latitude}")
                 }
             }
@@ -319,7 +336,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                 super.onLocationAvailability(p0)
             }
         }
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(requireContext())
         startLocationUpdates()
     }
 
@@ -333,14 +351,14 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             isLocationPermissionOk = true
-           return
+            return
         }
         fusedLocationProviderClient?.requestLocationUpdates(
             locationRequest,
             locationCallback,
             Looper.getMainLooper()
-        )?.addOnCompleteListener{ task ->
-            if (task.isSuccessful){
+        )?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
                 Toast.makeText(requireContext(), "Location update start", Toast.LENGTH_SHORT).show()
             }
         }
@@ -348,7 +366,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     }
 
     private fun getCurrentLocation() {
-        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        val fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(requireContext())
 
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
@@ -359,18 +378,18 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             isLocationPermissionOk = false
-             return
+            return
         }
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener {location ->
-           if (location != null){
-               currentLocation = location
-               moveCameraToLocation(currentLocation)
-           } else {
-               fusedLocationProviderClient.requestLocationUpdates(
-                   getLocationRequest(), locationCallback, Looper.getMainLooper()
-               )
-           }
-        }.addOnFailureListener(){
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                currentLocation = location
+                moveCameraToLocation(currentLocation)
+            } else {
+                fusedLocationProviderClient.requestLocationUpdates(
+                    getLocationRequest(), locationCallback, Looper.getMainLooper()
+                )
+            }
+        }.addOnFailureListener() {
             Snackbar.make(requireView(), "Failure to get location", Snackbar.LENGTH_SHORT).show()
         }
     }
@@ -382,22 +401,24 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     }
 
     private fun moveCameraToLocation(location: Location) {
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(LatLng(
-            location.latitude,
-            location.longitude
-        ), 17f)
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(
+            LatLng(
+                location.latitude,
+                location.longitude
+            ), 17f
+        )
         val markerOptions = MarkerOptions()
             .position(LatLng(location.latitude, location.longitude))
             .title("Current Location")
             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             .snippet(firebaseAuth.currentUser?.displayName)
         currentMarkerOptions?.remove()
-        currentMarkerOptions= mGoogleMap?.addMarker(markerOptions)
+        currentMarkerOptions = mGoogleMap?.addMarker(markerOptions)
         currentMarkerOptions?.tag = 703
         mGoogleMap?.animateCamera(cameraUpdate)
     }
 
-    private fun stopLocationUpdates(){
+    private fun stopLocationUpdates() {
         fusedLocationProviderClient?.removeLocationUpdates(locationCallback)
         Log.d("TAG", "stopLocationUpdates: Location Update Stop")
     }
@@ -409,31 +430,33 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
 
     override fun onResume() {
         super.onResume()
-        if (fusedLocationProviderClient != null){
+        if (fusedLocationProviderClient != null) {
             startLocationUpdates()
             currentMarkerOptions?.remove()
         }
     }
 
-    private fun setUpRecyclerView(){
+    private fun setUpRecyclerView() {
         val snapHelper: SnapHelper = PagerSnapHelper()
         googlePlaceAdapter = GooglePlaceAdapter(this)
-        binding.placesRecyclerView.apply{
-            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.placesRecyclerView.apply {
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             setHasFixedSize(true)
             adapter = googlePlaceAdapter
-            addOnScrollListener(object: RecyclerView.OnScrollListener(){
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
                     val linearManager = recyclerView.layoutManager as LinearLayoutManager
                     val position = linearManager!!.findFirstCompletelyVisibleItemPosition()
-                    if (position > -1){
+                    if (position > -1) {
                         val googlePlaceModel: GooglePlaceModel = googlePlaceList[position]
                         mGoogleMap?.animateCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(
                                     googlePlaceModel.geometry?.location?.lat!!,
-                                    googlePlaceModel.geometry.location.lng!!),
+                                    googlePlaceModel.geometry.location.lng!!
+                                ),
                                 20f
                             )
                         )
@@ -444,23 +467,52 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         }
         snapHelper.attachToRecyclerView(binding.placesRecyclerView)
     }
+
     override fun onSaveClick(googlePlaceModel: GooglePlaceModel) {
-        if (userSavedLocationId.contains(googlePlaceModel.placeId)){
+        if (userSavedLocationId.contains(googlePlaceModel.placeId)) {
             AlertDialog.Builder(requireContext())
                 .setTitle("Remove Place")
                 .setMessage("Are you sure you want to remove this place?")
-                .setPositiveButton("Yes"){ _, _ ->
+                .setPositiveButton("Yes") { _, _ ->
                     removePlace(googlePlaceModel)
                 }
-                .setNeutralButton("No"){_, _ -> }
+                .setNeutralButton("No") { _, _ -> }
                 .create().show()
         } else {
-          addPlace(googlePlaceModel)
+            addPlace(googlePlaceModel)
         }
     }
 
     private fun addPlace(googlePlaceModel: GooglePlaceModel) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                locationViewModel.addUserPlace(googlePlaceModel, userSavedLocationId).collect {
+                    when (it) {
+                        is State.Failed -> {
+                            loadingDialog.stopLoading()
+                            Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG)
+                                .show()
+                        }
 
+                        is State.Loading -> {
+                            loadingDialog.startLoading()
+                        }
+
+                        is State.Success -> {
+                           loadingDialog.stopLoading()
+                            val placeModel: GooglePlaceModel = it.data as GooglePlaceModel
+                            userSavedLocationId.add(placeModel.placeId!!)
+                            val index = googlePlaceList.indexOf(placeModel)
+                            googlePlaceList[index].saved = true
+                            googlePlaceAdapter.notifyDataSetChanged()
+                            Snackbar.make(binding.root, "Saved Successfully", Snackbar.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
     private fun removePlace(googlePlaceModel: GooglePlaceModel) {
@@ -475,16 +527,35 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                 googlePlaceList[index].saved = true
                 googlePlaceAdapter.notifyDataSetChanged()
             }
-            .addCallback(object: BaseTransientBottomBar.BaseCallback<Snackbar?>(){
-                override fun onShown(transientBottomBar: Snackbar?) {
-                    super.onShown(transientBottomBar)
-                }
-
+            .addCallback(object: BaseTransientBottomBar.BaseCallback<Snackbar?>() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                     super.onDismissed(transientBottomBar, event)
-                    lifecycleScope.launch {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                            locationViewModel.removePlace(userSavedLocationId).collect {
+                                when (it) {
+                                    is State.Failed -> {
+                                        Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG)
+                                            .show()
+                                    }
+
+                                    is State.Loading -> {
+
+                                    }
+
+                                    is State.Success -> {
+                                        Snackbar.make(binding.root, it.data.toString(), Snackbar.LENGTH_LONG)
+                                            .show()
+                                    }
+                                }
+                            }
+                        }
+
                 }
             }
+
+            })
+            .show()
     }
 
     override fun onDirectionClick(googlePlaceModel: GooglePlaceModel) {

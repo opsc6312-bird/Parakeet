@@ -45,6 +45,7 @@ class AppRepo {
     }.flowOn(
         Dispatchers.IO
     )
+
     fun signUp(
         email: String,
         password: String,
@@ -68,6 +69,7 @@ class AppRepo {
     }.catch {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
+
     private suspend fun uploadImage(uid: String, image: Uri): Uri {
         val firebaseStorage = Firebase.storage
         val storageReference = firebaseStorage.reference
@@ -90,6 +92,7 @@ class AppRepo {
             sendEmailVerification().await()
         }
     }
+
     fun forgetPassword(email: String): Flow<State<Any>> = flow<State<Any>> {
         emit(State.loading(true))
         val auth = Firebase.auth
@@ -103,21 +106,22 @@ class AppRepo {
         emit(State.Loading(true))
         val response = RetrofitClient.retrofitApi.getNearbyPlaces(url)
         Log.d("TAG", "getPlaces: $response")
-        if (response.body()?.googlePlaceModelList?.size!!>0){
+        if (response.body()?.googlePlaceModelList?.size!! > 0) {
             emit(State.success(response.body()!!.error!!))
         }
     }.catch {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
 
-    suspend fun getUserLocationId(): ArrayList<String>{
+    suspend fun getUserLocationId(): ArrayList<String> {
         val userPlaces = ArrayList<String>()
         val auth = Firebase.auth
-        val database = Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
+        val database =
+            Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
         val data = database.get().await()
-        if(data.exists()){
-            for (ds in data.children){
-                val placeId= ds.getValue(String::class.java)
+        if (data.exists()) {
+            for (ds in data.children) {
+                val placeId = ds.getValue(String::class.java)
                 placeId?.let {
                     userPlaces.add(it)
                 }
@@ -126,13 +130,16 @@ class AppRepo {
         return userPlaces
     }
 
-    fun addUserPlace(googlePlaceModel: GooglePlaceModel, userSavedLocationId: ArrayList<String>){
-        flow<State<Any>>{
+    fun addUserPlace(googlePlaceModel: GooglePlaceModel, userSavedLocationId: ArrayList<String>) =
+        flow<State<Any>> {
             emit(State.Loading(true))
             val auth = Firebase.auth
-            val userDatabase = Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
-            val database = Firebase.database.getReference("Places").child(googlePlaceModel.placeId!!).get().await()
-            if (!database.exists()){
+            val userDatabase =
+                Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
+            val database =
+                Firebase.database.getReference("Places").child(googlePlaceModel.placeId!!).get()
+                    .await()
+            if (!database.exists()) {
                 val savedPlaceModel = SavedPlacesModel(
                     googlePlaceModel.name!!, googlePlaceModel.vicinity!!,
                     googlePlaceModel.placeId, googlePlaceModel.userRatingsTotal!!,
@@ -147,17 +154,17 @@ class AppRepo {
         }.flowOn(Dispatchers.IO).catch {
             emit(State.failed(it.message!!))
         }
-    }
 
     private suspend fun addPlace(savedPlaceModel: SavedPlacesModel) {
         val database = Firebase.database.getReference("Places")
         database.child(savedPlaceModel.placeId).setValue(savedPlaceModel).await()
     }
 
-    fun removePlace(userSavedLocationId: ArrayList<String>)= flow<State<Any>>{
+    fun removePlace(userSavedLocationId: ArrayList<String>) = flow<State<Any>> {
         emit(State.loading(true))
         val auth = Firebase.auth
-        val database = Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
+        val database =
+            Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
         database.setValue(userSavedLocationId).await()
         emit(State.success("Remove Successful"))
     }.catch {
