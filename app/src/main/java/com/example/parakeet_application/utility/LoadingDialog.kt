@@ -11,17 +11,24 @@ class LoadingDialog(private val activity: Activity) {
     private var alertDialog: AlertDialog? = null
 
     fun startLoading() {
-        val builder = AlertDialog.Builder(activity, R.style.loadingDialogStyle)
-        val binding = DialogLayoutBinding.inflate(LayoutInflater.from(activity), null, false)
+        if (!activity.isFinishing && (alertDialog == null || !alertDialog!!.isShowing)) {
+            val builder = AlertDialog.Builder(activity, R.style.loadingDialogStyle)
+            val binding = DialogLayoutBinding.inflate(LayoutInflater.from(activity), null, false)
 
-        builder.setView(binding.root)
-        builder.setCancelable(false)
-        alertDialog = builder.create()
-        alertDialog?.show()
+            builder.setView(binding.root)
+            builder.setCancelable(false)
+            alertDialog = builder.create()
+            alertDialog?.show()
+        }
     }
 
     fun stopLoading() {
-        alertDialog?.dismiss()
+        alertDialog?.let{
+            if (it.isShowing) {
+                it.dismiss()
+            }
+        }
+        alertDialog = null
     }
 
 }

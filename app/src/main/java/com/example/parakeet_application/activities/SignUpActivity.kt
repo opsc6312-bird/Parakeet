@@ -97,12 +97,6 @@ class SignUpActivity : AppCompatActivity() {
                                         is State.Loading -> {
                                             if (it.flag == true)
                                                 loadingDialog.startLoading()
-                                            val intent = Intent(
-                                                this@SignUpActivity,
-                                                LoginActivity::class.java
-                                            )
-                                            startActivity(intent)
-                                            finish()
                                         }
 
                                         is State.Success -> {
@@ -146,14 +140,13 @@ class SignUpActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                         if (areFieldReady()) {
-                            if (image == null) {
+                            if (image != null) {
                                 loginViewModel.signUp(email, password, username, image!!).collect {
                                     when (it) {
                                         is State.Loading -> {
                                             if (it.flag == true)
                                                 loadingDialog.startLoading()
                                         }
-
                                         is State.Success -> {
                                             loadingDialog.stopLoading()
                                             Snackbar.make(
