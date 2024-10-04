@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                     if (snapshot.exists()){
                         val userModel = snapshot.getValue(UserModel::class.java)
                         Glide.with(this@MainActivity).load(userModel?.image).into(imgHeader)
-                        txtName.text = firebaseAuth.currentUser?.email
+                        txtName.text = userModel?.username
                         txtEmail.text = userModel?.email
                     }
                     else {
