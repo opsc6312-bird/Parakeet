@@ -23,7 +23,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.location.LocationManagerCompat.getCurrentLocation
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.parakeet_application.R
 import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.data.model.mapsModel.GooglePlaceModel
@@ -156,64 +158,63 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             if (checkedId != -1){
                 val placeModel = AppConstant.placesName[checkedId - 1]
                 binding.edtPlaceName.setText(placeModel.name)
-                getNearbyPlaces(placeModel.placeType)
+                getNearByPlaces(placeModel.placeType)
             }
 
         }
     }
 
-    private fun getNearbyPlaces(placeType: String) {
-        val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" +
+    private fun getNearByPlaces(placeType: String) {
+        val url = ("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" +
                 "${currentLocation.latitude},${currentLocation.longitude}" +
                 "&radius=${radius}&type=${placeType}&key=" +
-                resources.getString(R.string.API_KEY)
+                resources.getString(R.string.API_KEY))
 
-        lifecycleScope.launch {
-            locationViewModel.getNearByPlaces(url).collect{
-                when(it) {
-                    is State.Failed -> {
-                        loadingDialog.stopLoading()
-                        Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG).show()
-                    }
-                    is State.Loading -> {
-                        if (it.flag == true){
-                            loadingDialog.startLoading()
-                        }
-                    }
-                    is State.Success -> {
-                        loadingDialog.stopLoading()
-                        val googleResponseModel: GoogleResponseModel = it.data as GoogleResponseModel
-                        if (googleResponseModel.googlePlaceModelList != null &&
-                            googleResponseModel.googlePlaceModelList.isNotEmpty()){
-                            googlePlaceList.clear()
-                            mGoogleMap?.clear()
-
-                            for (i in googleResponseModel.googlePlaceModelList.indices){
-                                googlePlaceList.add(googleResponseModel.googlePlaceModelList[i])
-                                addMarker(googleResponseModel.googlePlaceModelList[i], i)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+                    locationViewModel.getNearByPlaces(url).collect{
+                        when(it) {
+                            is State.Failed -> {
+                                loadingDialog.stopLoading()
+                                Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG).show()
                             }
-                          }else{
-                              mGoogleMap?.clear()
-                            googlePlaceList.clear()
+                            is State.Loading -> {
+                                if (it.flag == true){
+                                    loadingDialog.startLoading()
+                                }
+                            }
+                            is State.Success -> {
+                                loadingDialog.stopLoading()
+                                val googleResponseModel: GoogleResponseModel = it.data as GoogleResponseModel
+                                if (!googleResponseModel.googlePlaceModelList.isNullOrEmpty()){
+                                    googlePlaceList.clear()
+                                    mGoogleMap?.clear()
+
+                                    for ((index, place) in googleResponseModel.googlePlaceModelList.withIndex()){
+                                        googlePlaceList.add(place)
+                                        addMarker(place, index)
+                                    }
+                                }else{ mGoogleMap?.clear()
+                                    googlePlaceList.clear()
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
     private fun addMarker(googlePlaceModel: GooglePlaceModel, position: Int) {
-        val markerOptions = MarkerOptions()
-            .position(
-                LatLng(
-                    googlePlaceModel.geometry?.location?.latitude!!,
-                    googlePlaceModel.geometry?.location?.longitude!!
-                )
-            )
-            .title(googlePlaceModel.name)
-            .snippet(googlePlaceModel.vicinity)
-        markerOptions.icon(getCustomIcon())
-        mGoogleMap?.addMarker(markerOptions)
+        googlePlaceModel.geometry?.location?.let { location ->
+            val markerOptions = MarkerOptions()
+                .position(LatLng(location.lat!!, location.lng!!))
+                .title(googlePlaceModel.name)
+                .snippet(googlePlaceModel.vicinity)
+            markerOptions.icon(getCustomIcon())
+            mGoogleMap?.addMarker(markerOptions)?.tag = position
+        }?: run {
+            Log.e("TAG", "Invalid location for place: ${googlePlaceModel.name}")
+        }
     }
 
     private fun getCustomIcon(): BitmapDescriptor {
@@ -221,14 +222,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         background?.setTint(resources.getColor(R.color.purple_700, null))
         background?.setBounds(0, 0, background.intrinsicWidth, background.intrinsicHeight)
         val bitmap = Bitmap.createBitmap(
-            background?.intrinsicWidth!!, background.intrinsicHeight,
+            background?.intrinsicWidth?:0, background?.intrinsicHeight?:0,
             Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(bitmap)
-        background.draw(canvas)
+        background?.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
-
 
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
@@ -260,7 +260,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private fun requestLocation() {
         permissionRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
         permissionRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-
         permissionLauncher.launch(permissionRequest.toTypedArray())
     }
 
