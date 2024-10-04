@@ -11,7 +11,6 @@ data class PhotoModel(
     val width: Int?
 ){
     companion object {
-
         @JvmStatic
         @BindingAdapter("loadImage")
         fun loadImage(view: ImageView, image: String?) {
