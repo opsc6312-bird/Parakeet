@@ -41,8 +41,6 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var password: String
     private var image: Uri? = null
     private val loginViewModel: LoginViewModel by viewModels()
-    private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
-    private lateinit var cropImageLauncher: ActivityResultLauncher<Intent>
 
     private lateinit var getImageLauncher: ActivityResultLauncher<Intent>
 
