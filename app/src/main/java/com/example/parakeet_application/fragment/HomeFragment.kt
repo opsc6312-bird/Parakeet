@@ -61,6 +61,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.chip.Chip
+import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -77,7 +78,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     private var isLocationPermissionOk: Boolean = false
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
-    private lateinit var locationResult: LocationResult
     private var fusedLocationProviderClient: FusedLocationProviderClient?= null
     private lateinit var currentLocation: Location
     private  var currentMarkerOptions: Marker? = null
@@ -87,6 +87,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     private val locationViewModel: LocationViewModel by viewModels<LocationViewModel>()
     private lateinit var googlePlaceAdapter: GooglePlaceAdapter
     private lateinit var googlePlaceList: ArrayList<GooglePlaceModel>
+    private var userSavedLocationId: ArrayList<String> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -173,6 +174,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         }
 
         setUpRecyclerView()
+
+        userSavedLocationId = locationViewModel.getUserLocationId()
     }
 
     private fun getNearByPlaces(placeType: String) {
@@ -202,6 +205,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                                     mGoogleMap?.clear()
 
                                     for ((index, place) in googleResponseModel.googlePlaceModelList.withIndex()){
+                                        place.saved = userSavedLocationId.contains(googleResponseModel.googlePlaceModelList[index].placeId)
                                         googlePlaceList.add(place)
                                         addMarker(place, index)
                                     }
@@ -441,7 +445,46 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         snapHelper.attachToRecyclerView(binding.placesRecyclerView)
     }
     override fun onSaveClick(googlePlaceModel: GooglePlaceModel) {
-        TODO("Not yet implemented")
+        if (userSavedLocationId.contains(googlePlaceModel.placeId)){
+            AlertDialog.Builder(requireContext())
+                .setTitle("Remove Place")
+                .setMessage("Are you sure you want to remove this place?")
+                .setPositiveButton("Yes"){ _, _ ->
+                    removePlace(googlePlaceModel)
+                }
+                .setNeutralButton("No"){_, _ -> }
+                .create().show()
+        } else {
+          addPlace(googlePlaceModel)
+        }
+    }
+
+    private fun addPlace(googlePlaceModel: GooglePlaceModel) {
+
+    }
+
+    private fun removePlace(googlePlaceModel: GooglePlaceModel) {
+        userSavedLocationId.remove(googlePlaceModel.placeId)
+        val index = googlePlaceList.indexOf(googlePlaceModel)
+        googlePlaceList[index].saved = false
+        googlePlaceAdapter.notifyDataSetChanged()
+
+        Snackbar.make(binding.root, "Place Removed", Snackbar.LENGTH_SHORT)
+            .setAction("Undo"){
+                userSavedLocationId.add(googlePlaceModel.placeId!!)
+                googlePlaceList[index].saved = true
+                googlePlaceAdapter.notifyDataSetChanged()
+            }
+            .addCallback(object: BaseTransientBottomBar.BaseCallback<Snackbar?>(){
+                override fun onShown(transientBottomBar: Snackbar?) {
+                    super.onShown(transientBottomBar)
+                }
+
+                override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                    super.onDismissed(transientBottomBar, event)
+                    lifecycleScope.launch {
+                }
+            }
     }
 
     override fun onDirectionClick(googlePlaceModel: GooglePlaceModel) {
