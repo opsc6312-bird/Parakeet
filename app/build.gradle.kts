@@ -82,7 +82,8 @@ dependencies {
     //Image Cropper
     implementation ("com.github.yalantis:ucrop:2.2.8")
     implementation("com.github.bumptech.glide:glide:4.12.0")
-    implementation("io.github.florent37:shapeofview:1.4.7")
+
+    implementation ("io.github.florent37:shapeofview:1.4.7")
 
     //ViewModels
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")

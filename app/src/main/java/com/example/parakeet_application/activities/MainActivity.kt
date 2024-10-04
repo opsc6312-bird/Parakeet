@@ -1,16 +1,13 @@
-package com.example.parakeet_application
+package com.example.parakeet_application.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
-import com.bumptech.glide.Glide
+import com.example.parakeet_application.R
 import com.example.parakeet_application.data.model.UserModel
 import com.example.parakeet_application.databinding.ActivityMainBinding
 import com.example.parakeet_application.databinding.NavigationDrawerLayoutBinding

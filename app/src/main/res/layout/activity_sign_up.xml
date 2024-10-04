@@ -49,7 +49,7 @@
         android:id="@+id/txtTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Near Me"
+        android:text="Near Me Buhle"
         android:textColor="@color/white"
         android:textSize="40sp"
         android:textStyle="bold"
@@ -132,16 +132,19 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Login Text -->
-    <TextView
-        android:id="@+id/txtLogin"
-        android:layout_width="wrap_content"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/login_string"
-        android:textSize="18sp"
-        android:textColor="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/btnSignUp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        android:layout_marginHorizontal="30dp"
+        android:padding="15dp"
+        android:text="Login"
+        android:textStyle="bold"
+        app:cornerRadius="20dp"
+        app:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSignUp"
+        app:layout_constraintVertical_bias="0.061"
+        tools:layout_editor_absoluteX="30dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
