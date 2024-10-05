@@ -99,5 +99,7 @@ dependencies {
     implementation("io.coil-kt:coil:2.3.0")
     implementation("androidx.activity:activity-ktx:1.9.2") // For ActivityResult API
     implementation("androidx.core:core-ktx:1.13.1")
+    implementation("com.google.android.material:material:1.10.0")
+
 
 }
