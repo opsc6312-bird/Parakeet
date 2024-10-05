@@ -1,5 +1,6 @@
 package com.example.parakeet_application.repo
 
+import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Log
 import com.example.parakeet_application.constants.AppConstant
@@ -177,4 +178,17 @@ class AppRepo {
     }.catch {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
+
+    fun getDistanceUnitPreferences(sharedPreferences: SharedPreferences): Pair<Boolean, Int> {
+        val isKilometers = sharedPreferences.getBoolean("isKilometers", true)
+        val maxDistance = sharedPreferences.getInt("maxDistance", 5)
+        return Pair(isKilometers, maxDistance)
+    }
+
+    fun saveDistanceUnitPreferences(sharedPreferences: SharedPreferences, isKilometers: Boolean, maxDistance: Int) {
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("isKilometers", isKilometers)
+        editor.putInt("maxDistance", maxDistance)
+        editor.apply()
+    }
 }
