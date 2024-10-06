@@ -34,7 +34,7 @@
                 loadImage="@{googlePlaceModel.icon}"
                 android:layout_width="0dp"
                 android:layout_height="100dp"
-                android:layout_weight="0.5"
+                android:layout_weight="0.6"
                 android:scaleType="centerCrop"
                 android:src="@color/black" />
 
@@ -55,7 +55,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{googlePlaceModel.rating!=null?String.valueOf(googlePlaceModel.rating):`New`,default=3.4}"
-                        android:textColor="@color/black"
+                        android:textColor="?attr/color"
                         android:textStyle="bold"
                         app:drawableStartCompat="@drawable/ic_rating"
                         app:drawableTint="@color/primaryColor" />
@@ -67,7 +67,7 @@
                         android:paddingStart="5dp"
                         android:paddingEnd="1dp"
                         android:text="@{googlePlaceModel.userRatingsTotal!=null?`(`+String.valueOf(googlePlaceModel.userRatingsTotal)+`)`:``,default=`(123)`}"
-                        android:textColor="@color/itemTextColor" />
+                        android:textColor="?attr/color" />
 
                     <ImageView
                         android:id="@+id/imgSaveLocation"
@@ -96,7 +96,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:text="@{googlePlaceModel.name!=null?googlePlaceModel.name:`No Name`,default=`Place Name`}"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/color"
                     android:textStyle="bold" />
                 <TextView
                     android:id="@+id/txtPlaceAddress"
@@ -106,7 +106,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:text="@{googlePlaceModel.vicinity!=null?googlePlaceModel.vicinity:`No Address`,default=`Place Address`}"
-                    android:textColor="@color/black" />
+                    android:textColor="?attr/color" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
