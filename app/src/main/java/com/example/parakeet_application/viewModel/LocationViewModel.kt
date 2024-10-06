@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 
 class LocationViewModel: ViewModel() {
     private val repo  = AppRepo()
-    fun getNearByPlaces(url: String) = repo.getNearByPlaces(url)
+    fun getNearByPlace(url: String) = repo.getPlaces(url)
     fun removePlace(userSavedLocationId: ArrayList<String>) = repo.removePlace(userSavedLocationId = userSavedLocationId)
     fun addUserPlace(googlePlaceModel: GooglePlaceModel, userSavedLocationId: ArrayList<String>) = repo.addUserPlace(googlePlaceModel = googlePlaceModel, userSavedLocationId = userSavedLocationId)
     fun getUserLocationId(): ArrayList<String>{

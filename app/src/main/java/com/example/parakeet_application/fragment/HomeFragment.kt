@@ -61,6 +61,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -137,10 +138,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
             chip.chipBackgroundColor = resources.getColorStateList(R.color.black, null)
             chip.chipIcon = ResourcesCompat.getDrawable(resources, placeModel.drawableId, null)
             chip.isClickable = true
-            chip.isCheckedIconVisible = false
+            chip.isCheckable = true
             binding.placesGroup.addView(chip)
         }
-        binding.placesGroup.check(AppConstant.placesName[1].id)
 
         binding.enableTraffic.setOnClickListener() {
             if (isTrafficEnable) {
@@ -156,7 +156,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
             }
         }
         binding.currentLocation.setOnClickListener() { getCurrentLocation() }
-
         binding.btnMapType.setOnClickListener() {
             val popupMenu = PopupMenu(requireContext(), it)
             popupMenu.apply {
@@ -172,62 +171,56 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                 show()
             }
         }
+        ////////////
 
-        binding.placesGroup.setOnCheckedStateChangeListener() { group, checkedIds ->
-            if (checkedIds.isNotEmpty()) {
-                val checkedId = checkedIds[0]
+        binding.placesGroup.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId != -1) {
                 val placeModel = AppConstant.placesName[checkedId - 1]
                 binding.edtPlaceName.setText(placeModel.name)
-                getNearByPlaces(placeModel.placeType)
+                Toast.makeText(requireContext(), placeModel.name, Toast.LENGTH_SHORT).show()
+                getNearByPlace(placeModel.placeType)
             }
         }
-
         setUpRecyclerView()
-
         userSavedLocationId = locationViewModel.getUserLocationId()
     }
 
-    private fun getNearByPlaces(placeType: String) {
+    private fun getNearByPlace(placeType: String) {
         val url = ("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" +
                 "${currentLocation.latitude},${currentLocation.longitude}" +
-                "&radius=${radius}&type=${placeType}&key=" +
+                "&radius=$radius&type=$placeType&key=" +
                 resources.getString(R.string.API_KEY))
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                locationViewModel.getNearByPlaces(url).collect {
-                    when (it) {
-                        is State.Failed -> {
-                            loadingDialog.stopLoading()
-                            Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG).show()
+        lifecycleScope.launchWhenStarted {
+            locationViewModel.getNearByPlace(url).collect { state ->
+                when (state) {
+                    is State.Loading -> {
+                        if (state.flag == true) {
+                            loadingDialog.startLoading()
                         }
+                    }
+                    is State.Success -> {
+                        loadingDialog.stopLoading()
+                        val googleResponseModel: GoogleResponseModel = state.data as GoogleResponseModel
 
-                        is State.Loading -> {
-                            if (it.flag == true) {
-                                loadingDialog.startLoading()
+                        if (!googleResponseModel.googlePlaceModelList.isNullOrEmpty()) {
+                            googlePlaceList.clear()
+                            mGoogleMap?.clear()
+
+                            googleResponseModel.googlePlaceModelList.forEachIndexed { index, placeModel ->
+                                placeModel.saved = userSavedLocationId.contains(placeModel.placeId)
+                                googlePlaceList.add(placeModel)
+                                addMarker(placeModel, index)
                             }
+                            googlePlaceAdapter.setGooglePlaces(googlePlaceList)
+                        } else {
+                            mGoogleMap?.clear()
+                            googlePlaceList.clear()
                         }
-
-                        is State.Success -> {
-                            loadingDialog.stopLoading()
-                            val googleResponseModel: GoogleResponseModel =
-                                it.data as GoogleResponseModel
-                            if (!googleResponseModel.googlePlaceModelList.isNullOrEmpty()) {
-                                googlePlaceList.clear()
-                                mGoogleMap?.clear()
-
-                                for ((index, place) in googleResponseModel.googlePlaceModelList.withIndex()) {
-                                    place.saved =
-                                        userSavedLocationId.contains(googleResponseModel.googlePlaceModelList[index].placeId)
-                                    googlePlaceList.add(place)
-                                    addMarker(place, index)
-                                }
-                                googlePlaceAdapter.setGooglePlaces(googlePlaceList)
-                            } else {
-                                mGoogleMap?.clear()
-                                googlePlaceList.clear()
-                            }
-                        }
+                    }
+                    is State.Failed -> {
+                        loadingDialog.stopLoading()
+                        Snackbar.make(binding.root, state.error, Snackbar.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -235,26 +228,18 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     }
 
     private fun addMarker(googlePlaceModel: GooglePlaceModel, position: Int) {
-        googlePlaceModel.geometry?.location?.let { location ->
-            val lat = location.lat
-            val lng = location.lng
-            if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
-                val markerOptions = MarkerOptions()
-                    .position(LatLng(lat, lng))
-                    .title(googlePlaceModel.name)
-                    .snippet(googlePlaceModel.vicinity)
-                markerOptions.icon(getCustomIcon())
-                mGoogleMap?.addMarker(markerOptions)?.tag = position
-            } else {
-                Log.e(
-                    "TAG",
-                    "Invalid location for place: ${googlePlaceModel.name} (lat: $lat, lng: $lng)"
+        val markerOptions = MarkerOptions()
+            .position(
+                LatLng(
+                    googlePlaceModel.geometry?.location?.lat!!,
+                    googlePlaceModel.geometry.location.lng!!
                 )
-            }
+            )
+            .title(googlePlaceModel.name)
+            .snippet(googlePlaceModel.vicinity)
 
-        } ?: run {
-            Log.e("TAG", "Invalid location for place: ${googlePlaceModel.name}")
-        }
+        markerOptions.icon(getCustomIcon())
+        mGoogleMap?.addMarker(markerOptions)?.tag = position
     }
 
     private fun getCustomIcon(): BitmapDescriptor {
@@ -269,6 +254,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         background?.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
@@ -441,16 +427,19 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     private fun setUpRecyclerView() {
         val snapHelper: SnapHelper = PagerSnapHelper()
         googlePlaceAdapter = GooglePlaceAdapter(this)
+
         binding.placesRecyclerView.apply {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-            setHasFixedSize(true)
+
+            setHasFixedSize(false)
             adapter = googlePlaceAdapter
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
+
                     val linearManager = recyclerView.layoutManager as LinearLayoutManager
-                    val position = linearManager!!.findFirstCompletelyVisibleItemPosition()
+                    val position = linearManager.findFirstCompletelyVisibleItemPosition()
                     if (position > -1) {
                         val googlePlaceModel: GooglePlaceModel = googlePlaceList[position]
                         mGoogleMap?.animateCamera(
@@ -458,15 +447,14 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                                 LatLng(
                                     googlePlaceModel.geometry?.location?.lat!!,
                                     googlePlaceModel.geometry.location.lng!!
-                                ),
-                                20f
+                                ), 20f
                             )
                         )
                     }
                 }
-
             })
         }
+
         snapHelper.attachToRecyclerView(binding.placesRecyclerView)
     }
 
@@ -474,47 +462,50 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         if (userSavedLocationId.contains(googlePlaceModel.placeId)) {
             AlertDialog.Builder(requireContext())
                 .setTitle("Remove Place")
-                .setMessage("Are you sure you want to remove this place?")
+                .setMessage("Are you sure to remove this place?")
                 .setPositiveButton("Yes") { _, _ ->
                     removePlace(googlePlaceModel)
                 }
-                .setNeutralButton("No") { _, _ -> }
+                .setNegativeButton("No") { _, _ -> }
                 .create().show()
         } else {
             addPlace(googlePlaceModel)
+
         }
     }
 
     private fun addPlace(googlePlaceModel: GooglePlaceModel) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                locationViewModel.addUserPlace(googlePlaceModel, userSavedLocationId).collect {
-                    when (it) {
-                        is State.Failed -> {
-                            loadingDialog.stopLoading()
-                            Snackbar.make(binding.root, it.error, Snackbar.LENGTH_LONG)
-                                .show()
-                        }
-
-                        is State.Loading -> {
+        lifecycleScope.launchWhenStarted {
+            locationViewModel.addUserPlace(googlePlaceModel, userSavedLocationId).collect {
+                when (it) {
+                    is State.Loading -> {
+                        if (it.flag == true) {
                             loadingDialog.startLoading()
                         }
+                    }
 
-                        is State.Success -> {
-                           loadingDialog.stopLoading()
-                            val placeModel: GooglePlaceModel = it.data as GooglePlaceModel
-                            userSavedLocationId.add(placeModel.placeId!!)
-                            val index = googlePlaceList.indexOf(placeModel)
-                            googlePlaceList[index].saved = true
-                            googlePlaceAdapter.notifyDataSetChanged()
-                            Snackbar.make(binding.root, "Saved Successfully", Snackbar.LENGTH_SHORT)
-                                .show()
-                        }
+                    is State.Success -> {
+                        loadingDialog.stopLoading()
+                        val placeModel: GooglePlaceModel = it.data as GooglePlaceModel
+                        userSavedLocationId.add(placeModel.placeId!!)
+                        val index = googlePlaceList.indexOf(placeModel)
+                        googlePlaceList[index].saved = true
+                        googlePlaceAdapter.notifyDataSetChanged()
+                        Snackbar.make(binding.root, "Saved Successfully", Snackbar.LENGTH_SHORT)
+                            .show()
+
+                    }
+                    is State.Failed -> {
+                        loadingDialog.stopLoading()
+                        Snackbar.make(
+                            binding.root, it.error,
+                            Snackbar.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
-
         }
+
     }
 
     private fun removePlace(googlePlaceModel: GooglePlaceModel) {

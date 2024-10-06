@@ -19,7 +19,7 @@ class SettingsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(LocationViewModel::class.java)
+        viewModel = ViewModelProvider(this)[LocationViewModel::class.java]
 
     }
 
@@ -56,9 +56,5 @@ class SettingsFragment : Fragment() {
             viewModel.saveDistancePreferences(sharedPreferences, distanceUnitSwitch.isChecked, selectedDistance)
         }
         return view
-    }
-
-    companion object {
-
     }
 }

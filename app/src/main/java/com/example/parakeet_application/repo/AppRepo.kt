@@ -110,16 +110,37 @@ class AppRepo {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
 
-    fun getNearByPlaces(url: String): Flow<State<Any>> = flow<State<Any>> {
-        emit(State.Loading(true))
+    fun getPlaces(url: String): Flow<State<Any>> = flow<State<Any>> {
+        emit(State.loading(true))
+
         val response = RetrofitClient.retrofitApi.getNearbyPlaces(url)
-        Log.d("TAG", "getPlaces: $response")
-        if (response.body()?.googlePlaceModelList?.size!! > 0) {
-            emit(State.success(response.body()!!.error!!))
+
+        // Log the entire response for better debugging
+        Log.d("TAG", "getPlaces Response: $response")
+
+        val body = response.body()
+        Log.d("TAG", "getPlaces: Body: $body")
+        // Null checks and handling
+        if (body != null) {
+            val placeList = body.googlePlaceModelList
+
+            // Check if the list exists and has elements
+            if (!placeList.isNullOrEmpty()) {
+                Log.d("TAG", "getPlaces: Success with ${placeList.size} places")
+                emit(State.success(body))
+            } else {
+                Log.d("TAG", "getPlaces: Empty or null googlePlaceModelList")
+                emit(State.failed("No places found"))
+            }
+        } else {
+            Log.d("TAG", "getPlaces: Null response body")
+            emit(State.failed("Response body is null"))
         }
-    }.catch {
-        emit(State.failed(it.message!!))
+    }.catch { exception ->
+        emit(State.failed(exception.message ?: "Unknown error occurred"))
+        Log.e("TAG", "getPlaces: Exception: ${exception.message}")
     }.flowOn(Dispatchers.IO)
+
 
     suspend fun getUserLocationId(): ArrayList<String> {
         val userPlaces = ArrayList<String>()
@@ -171,8 +192,7 @@ class AppRepo {
     fun removePlace(userSavedLocationId: ArrayList<String>) = flow<State<Any>> {
         emit(State.loading(true))
         val auth = Firebase.auth
-        val database =
-            Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
+        val database = Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
         database.setValue(userSavedLocationId).await()
         emit(State.success("Remove Successful"))
     }.catch {
