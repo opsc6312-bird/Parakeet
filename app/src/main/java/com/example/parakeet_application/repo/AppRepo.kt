@@ -23,6 +23,7 @@ import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
+import kotlin.math.roundToInt
 
 class AppRepo {
     fun login(
@@ -223,19 +224,74 @@ class AppRepo {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
 
+    // Function to retrieve the user's distance preferences
     fun getDistanceUnitPreferences(sharedPreferences: SharedPreferences): Pair<Boolean, Int> {
         val isKilometers = sharedPreferences.getBoolean("isKilometers", true)
         val maxDistance = sharedPreferences.getInt("maxDistance", 5)
-      return Pair(isKilometers, maxDistance)
+        return Pair(isKilometers, maxDistance)
     }
 
-    fun saveDistanceUnitPreferences(sharedPreferences: SharedPreferences, isKilometers: Boolean, maxDistance: Int) {
+    // Function to save the user's distance preferences locally and to Firebase
+    fun saveDistanceUnitPreferences(
+        sharedPreferences: SharedPreferences,
+        isKilometers: Boolean,
+        maxDistance: Int
+    ) {
         val editor = sharedPreferences.edit()
-        val auth = Firebase.auth
-        val database = Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
-        database.setValue(isKilometers)
+
+        // Save locally
         editor.putBoolean("isKilometers", isKilometers)
         editor.putInt("maxDistance", maxDistance)
         editor.apply()
+
+        // Save remotely to Firebase
+        val auth = Firebase.auth
+        val userId = auth.uid
+
+        // Check if the user is authenticated before saving to Firebase
+        if (userId != null) {
+            val database = Firebase.database.getReference("Users").child(userId).child("Saved Locations")
+
+            // Save both preferences to Firebase
+            val preferencesMap = mapOf(
+                "isKilometers" to isKilometers,
+                "maxDistance" to maxDistance
+            )
+            database.setValue(preferencesMap).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Handle success (optional: you can notify the user)
+                } else {
+                    // Handle failure (optional: you can log the error or notify the user)
+                    task.exception?.let { exception ->
+                        // Log the error, or show an error message
+                        Log.e("FirebaseError", "Error saving preferences to Firebase", exception)
+                    }
+                }
+            }
+        }
     }
+
+    // Function to convert kilometers to miles
+    private fun convertKilometersToMiles(kilometers: Double): Double {
+        return kilometers * 0.621371
+    }
+
+    // Function to display distance with conversion logic
+    fun displayDistance(
+        sharedPreferences: SharedPreferences,
+        distanceInKilometers: Double
+    ): String {
+        val (isKilometers, _) = getDistanceUnitPreferences(sharedPreferences)
+
+        return if (isKilometers) {
+            // Display in kilometers
+            "${distanceInKilometers.roundToInt()} KM"
+        } else {
+            // Convert to miles and display
+            val distanceInMiles = convertKilometersToMiles(distanceInKilometers)
+            "${distanceInMiles.roundToInt()} Miles"
+        }
+    }
+
+
 }
