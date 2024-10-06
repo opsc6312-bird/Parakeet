@@ -17,5 +17,5 @@ data class GooglePlaceModel(
     @SerializedName("user_ratings_total")val userRatingsTotal: Int?,
     val vicinity: String?,
     @Transient
-    var saved: Boolean?
+    var saved: Boolean?,
 )

@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.recyclerview.widget.SnapHelper
 import com.example.parakeet_application.R
 import com.example.parakeet_application.adapter.GooglePlaceAdapter
+import com.example.parakeet_application.adapter.InfoWindowAdapter
 import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.data.interfaces.NearLocationInterface
 import com.example.parakeet_application.data.model.mapsModel.GooglePlaceModel
@@ -89,6 +90,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     private lateinit var googlePlaceAdapter: GooglePlaceAdapter
     private lateinit var googlePlaceList: ArrayList<GooglePlaceModel>
     private var userSavedLocationId: ArrayList<String> = ArrayList()
+    private var infoWindowAdapter: InfoWindowAdapter? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -371,6 +373,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 currentLocation = location
+                infoWindowAdapter= InfoWindowAdapter(currentLocation, requireContext())
+                mGoogleMap?.setInfoWindowAdapter(infoWindowAdapter)
                 moveCameraToLocation(currentLocation)
             } else {
                 fusedLocationProviderClient.requestLocationUpdates(
