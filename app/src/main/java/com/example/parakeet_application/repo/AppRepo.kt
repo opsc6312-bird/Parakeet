@@ -226,11 +226,14 @@ class AppRepo {
     fun getDistanceUnitPreferences(sharedPreferences: SharedPreferences): Pair<Boolean, Int> {
         val isKilometers = sharedPreferences.getBoolean("isKilometers", true)
         val maxDistance = sharedPreferences.getInt("maxDistance", 5)
-        return Pair(isKilometers, maxDistance)
+      return Pair(isKilometers, maxDistance)
     }
 
     fun saveDistanceUnitPreferences(sharedPreferences: SharedPreferences, isKilometers: Boolean, maxDistance: Int) {
         val editor = sharedPreferences.edit()
+        val auth = Firebase.auth
+        val database = Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
+        database.setValue(isKilometers)
         editor.putBoolean("isKilometers", isKilometers)
         editor.putInt("maxDistance", maxDistance)
         editor.apply()
