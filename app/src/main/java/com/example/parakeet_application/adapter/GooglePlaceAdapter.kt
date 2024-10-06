@@ -36,7 +36,7 @@ class GooglePlaceAdapter(private val nearLocationInterface: NearLocationInterfac
     }
     fun setGooglePlaces(googlePlaceModel: List<GooglePlaceModel>){
         googlePlaceModels = googlePlaceModel
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, googlePlaceModel.size)
     }
     class ViewHolder(val binding: PlaceItemLayoutBinding): RecyclerView.ViewHolder(binding.root)
 }

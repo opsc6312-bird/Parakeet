@@ -12,4 +12,8 @@
     <string name="API_KEY">AIzaSyCTHsiN5S3iNZulNWCfo3kKLtZhrpk1AMM</string>
     <string name="PLACES_KEY">AIzaSyA-EtOMaSUiCIclDjD3_cp2egDd26IcbAQ</string>
     <string name="login_string">Login</string>
+    <string name="distance_unit">Select Distance Unit</string>
+    <string name="km">Kilometer</string>
+    <string name="miles">Miles</string>
+    <string name="max_distance">Select Maximum Distance</string>
 </resources>

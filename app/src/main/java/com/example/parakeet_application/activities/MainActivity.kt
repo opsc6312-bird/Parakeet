@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbarLayoutBinding.toolbar)
 
         firebaseAuth = Firebase.auth
-
+        getUserData()
         val toggle = ActionBarDrawerToggle(
             this,
             navigationDrawerLayoutBinding.navDrawer,
@@ -59,7 +59,6 @@ class MainActivity : AppCompatActivity() {
             navController
         )
        val headerLayout = navigationDrawerLayoutBinding.navView.getHeaderView(0)
-        getUserData()
         imgHeader = headerLayout.findViewById(R.id.imgHeader)
         txtName = headerLayout.findViewById(R.id.txtHeaderName)
         txtEmail = headerLayout.findViewById(R.id.txtHeaderEmail)

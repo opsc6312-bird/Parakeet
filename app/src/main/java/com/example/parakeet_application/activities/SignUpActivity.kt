@@ -2,7 +2,6 @@ package com.example.parakeet_application.activities
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -17,8 +16,9 @@ import androidx.lifecycle.Lifecycle
 
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import coil.load
+import com.bumptech.glide.Glide
 import com.example.parakeet_application.R
-import com.example.parakeet_application.constants.AppConstant
 import com.example.parakeet_application.databinding.ActivitySignUpBinding
 import com.example.parakeet_application.permissions.AppPermissions
 import com.example.parakeet_application.utility.LoadingDialog
@@ -136,8 +136,6 @@ class SignUpActivity : AppCompatActivity() {
                     }
                 }
             }
-
-
             binding.imgPick.setOnClickListener {
                 if (appPermissions.isStorageOk(this))
                     pickImage()
