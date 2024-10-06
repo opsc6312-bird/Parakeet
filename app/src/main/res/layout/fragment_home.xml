@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinate"
         android:layout_width="match_parent"
@@ -56,6 +57,8 @@
             android:layout_marginBottom="30dp"
             android:background="@drawable/map_background"
             android:elevation="5dp" />
+
+
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
@@ -128,4 +131,11 @@
         android:paddingRight="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/place_item_layout" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/autoComplete_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"/>
+
 </RelativeLayout>

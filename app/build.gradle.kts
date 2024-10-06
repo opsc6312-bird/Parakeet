@@ -69,6 +69,9 @@ dependencies {
 
     // Google Services
     implementation("com.google.android.gms:play-services-base:18.5.0")
+    implementation("com.google.android.libraries.places:places:4.0.0")
+
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
 
     // Circular ImageView & Image Cropper
     implementation("de.hdodenhof:circleimageview:3.1.0")
@@ -100,4 +103,10 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.2") // For ActivityResult API
     implementation("androidx.core:core-ktx:1.13.1")
 
+    //Retrofit
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    //Junit testing
+    testImplementation("junit:junit:4.13.2")
 }
