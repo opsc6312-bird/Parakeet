@@ -11,4 +11,8 @@
     <string name="close_navigation_drawer">Close</string>
     <string name="API_KEY">AIzaSyCOHzWk1woEoNammQSdAO64KtBfFPsATCI</string>
     <string name="login_string">Login</string>
+    <string name="distance_unit">Select Distance Unit</string>
+    <string name="km">Kilometer</string>
+    <string name="miles">Miles</string>
+    <string name="max_distance">Select Maximum Distance</string>
 </resources>
