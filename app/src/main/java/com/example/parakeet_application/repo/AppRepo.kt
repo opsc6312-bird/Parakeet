@@ -161,28 +161,52 @@ class AppRepo {
 
     fun addUserPlace(googlePlaceModel: GooglePlaceModel, userSavedLocationId: ArrayList<String>) =
         flow<State<Any>> {
-            emit(State.Loading(true))
+            emit(State.loading(true))
             val auth = Firebase.auth
             val userDatabase =
                 Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
-            val database =
-                Firebase.database.getReference("Places").child(googlePlaceModel.placeId!!).get()
-                    .await()
-            if (!database.exists()) {
-                val savedPlaceModel = SavedPlacesModel(
-                    googlePlaceModel.name!!, googlePlaceModel.vicinity!!,
-                    googlePlaceModel.placeId, googlePlaceModel.userRatingsTotal!!,
-                    googlePlaceModel.rating!!, googlePlaceModel.geometry?.location?.lat!!,
-                    googlePlaceModel.geometry.location.lng!!,
-                )
-                addPlace(savedPlaceModel)
+
+            val placeId = googlePlaceModel.placeId
+            val name = googlePlaceModel.name
+            val vicinity = googlePlaceModel.vicinity
+            val userRatingsTotal = googlePlaceModel.userRatingsTotal
+            val rating = googlePlaceModel.rating
+            val lat = googlePlaceModel.geometry?.location?.lat
+            val lng = googlePlaceModel.geometry?.location?.lng
+
+            // Log the fields to see what's missing
+            Log.d("GooglePlaceModel", "placeId: $placeId")
+            Log.d("GooglePlaceModel", "name: $name")
+            Log.d("GooglePlaceModel", "vicinity: $vicinity")
+            Log.d("GooglePlaceModel", "userRatingsTotal: $userRatingsTotal")
+            Log.d("GooglePlaceModel", "rating: $rating")
+            Log.d("GooglePlaceModel", "lat: $lat")
+            Log.d("GooglePlaceModel", "lng: $lng")
+
+            // Check for null values before proceeding
+            if (placeId != null && name != null && vicinity != null && userRatingsTotal != null && rating != null && lat != null && lng != null) {
+                val database = Firebase.database.getReference("Places").child(placeId).get().await()
+                if (!database.exists()) {
+                    val savedPlaceModel = SavedPlacesModel(
+                        name, vicinity, placeId, userRatingsTotal, rating, lat, lng
+                    )
+
+                    addPlace(savedPlaceModel)
+                }
+
+                userSavedLocationId.add(placeId)
+                userDatabase.setValue(userSavedLocationId).await()
+                emit(State.success(googlePlaceModel))
+            } else {
+                Log.e("AddUserPlaceError", "Some required fields are missing in googlePlaceModel")
+                emit(State.failed("Some required fields are missing in googlePlaceModel"))
             }
-            userSavedLocationId.add(googlePlaceModel.placeId)
-            userDatabase.setValue(userSavedLocationId)
-            emit(State.success(googlePlaceModel))
         }.flowOn(Dispatchers.IO).catch {
-            emit(State.failed(it.message!!))
+            Log.e("AddUserPlaceError", "Error occurred: ${it.message}")
+            emit(State.failed(it.message ?: "An unknown error occurred"))
         }
+
+
 
     private suspend fun addPlace(savedPlaceModel: SavedPlacesModel) {
         val database = Firebase.database.getReference("Places")
