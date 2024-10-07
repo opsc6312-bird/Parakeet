@@ -2,6 +2,7 @@ package com.example.parakeet_application.fragment
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -34,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.recyclerview.widget.SnapHelper
 import com.example.parakeet_application.R
+import com.example.parakeet_application.activities.DirectionActivity
 import com.example.parakeet_application.adapter.GooglePlaceAdapter
 import com.example.parakeet_application.adapter.InfoWindowAdapter
 import com.example.parakeet_application.constants.AppConstant
@@ -54,7 +56,6 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -66,6 +67,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.Places
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -74,7 +76,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
-import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
@@ -161,12 +162,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
 
 
         //BIRDS API SERVICE
-
-
         val viewModel = ViewModelProvider(this)[BirdsApiViewModel::class.java]
 
-
-        activity?.applicationContext?.let { Places.initialize(it,getString(R.string.PLACES_KEY)) }
+        activity?.applicationContext?.let { Places.initialize(it,getString(R.string.API_KEY)) }
 
 
 
@@ -175,11 +173,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
 
         autocompleteFragment.setOnPlaceSelectedListener(object :PlaceSelectionListener{
-            override fun onError(p0: Status) {
-                Toast.makeText(requireContext(), "Some Error in search ${p0}", Toast.LENGTH_SHORT).show()
-                Log.i("SearchError", "${p0}")
-            }
-
             override fun onPlaceSelected(place: Place) {
                 place.latLng?.let { place.latLng?.let { it1 -> viewModel.fetchBirds(it.latitude, it1.longitude) } }
 
@@ -196,8 +189,14 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
                 marker.snippet = "$id"
 
                 zoomOnMap(latlng)
+            }
+
+            override fun onError(p0: Status) {
+                Toast.makeText(requireContext(), "Some Error in search ${p0}", Toast.LENGTH_SHORT).show()
+                Log.i("SearchError", "${p0}")
 
             }
+
         })
 
         if (mapFragment != null) {
@@ -648,7 +647,14 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     }
 
     override fun onDirectionClick(googlePlaceModel: GooglePlaceModel) {
-        TODO("Not yet implemented")
+        val placeId = googlePlaceModel.placeId
+        val lat = googlePlaceModel.geometry?.location?.lat
+        val lng = googlePlaceModel.geometry?.location?.lng
+        val intent = Intent(requireContext(), DirectionActivity::class.java)
+        intent.putExtra("placeId", placeId)
+        intent.putExtra("lat", lat)
+        intent.putExtra("lat", lat)
+        startActivity(intent)
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
