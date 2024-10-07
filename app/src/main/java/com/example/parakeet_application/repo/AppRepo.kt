@@ -228,17 +228,37 @@ class AppRepo {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
     fun getDirection(url: String): Flow<State<Any>> = flow<State<Any>> {
-        emit(State.loading(true))
-        val response = RetrofitClient.retrofitApi.getDirection(url)
-        if (response.body()?.directionRouteModels?.size!! > 0){
-            emit(State.success(response.body()!!))
-        }else{
-            emit(State.failed(response.body()?.error!!))
+        try {
+            emit(State.loading(true))
+
+            // Make network request using Retrofit
+            val response = RetrofitClient.retrofitApi.getDirection(url)
+
+            // Safely unwrap response body
+            val responseBody = response.body()
+
+            if (response.isSuccessful && responseBody != null) {
+                // Check if there are directionRouteModels
+                if (responseBody.directionRouteModels!!.isNotEmpty()) {
+                    Log.e("TAG", "getDirection: ${responseBody}")
+                    emit(State.success(responseBody))
+                } else {
+                    Log.e("TAG", "Poly: No routes found")
+                    emit(State.failed("No routes found"))
+                }
+            } else {
+                // Handle unsuccessful response or null body
+                val errorMessage = responseBody?.error ?: "Unknown error occurred"
+                Log.e("TAG", "Retrofit error: $errorMessage")
+                emit(State.failed(errorMessage))
+            }
+        } catch (e: Exception) {
+            // Catch and log the exception, then emit a failure state
+            Log.e("TAG", "getDirection error: ${e.localizedMessage ?: "Unknown error"}")
+            emit(State.failed(e.localizedMessage ?: "Unknown error"))
         }
     }.flowOn(Dispatchers.IO)
-        .catch {
-            emit(State.failed((it.message!!)))
-        }
+
 
     // Function to retrieve the user's distance preferences
     fun getDistanceUnitPreferences(sharedPreferences: SharedPreferences): Pair<Boolean, Int> {

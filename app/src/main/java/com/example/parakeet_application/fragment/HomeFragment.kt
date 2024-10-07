@@ -653,7 +653,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         val intent = Intent(requireContext(), DirectionActivity::class.java)
         intent.putExtra("placeId", placeId)
         intent.putExtra("lat", lat)
-        intent.putExtra("lat", lat)
+        intent.putExtra("lat", lng)
         startActivity(intent)
     }
 
