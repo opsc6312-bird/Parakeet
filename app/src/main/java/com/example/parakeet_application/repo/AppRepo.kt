@@ -14,6 +14,7 @@ import com.example.parakeet_application.data.model.mapsModel.GooglePlaceModel
 //import com.example.parakeet_application.models.googlePlaceModel.GooglePlaceModel
 //import com.example.parakeet_application.network.RetrofitClient
 import com.example.parakeet_application.utility.State
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
