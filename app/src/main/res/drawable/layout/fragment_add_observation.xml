@@ -16,6 +16,14 @@
         app:layout_constraintTop_toTopOf="parent"
         android:theme="@style/CustomToolbarStyle"/>
 
+    <!--TODO (Step 3: Here we have designed the add happy place screen using ConstraintLayout from below the toolbar component.)-->
+    <!--START-->
+    <!--Here we have done list of things.
+         1. We designed the view as per our requirement and with required components.
+         2. We have added some of the custom background drawables in the drawable folder.
+         3. We have added an place holder image in the drawable folder to use it in the image view.
+         4. We have added all the constant values in the respective file as dimen values are added in dimen.xml and both String and Color values are added in the color.xml and string.xml-->
+
     <ScrollView
         android:id="@+id/sv_main"
         android:layout_width="match_parent"
@@ -87,8 +95,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/edit_text_hint_date"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
                     android:inputType="text"
                     android:textColor="@color/primary_text_color"
                     android:textColorHint="@color/secondary_text_color"
@@ -167,7 +173,5 @@
                 app:layout_constraintTop_toBottomOf="@+id/iv_place_image" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
-
-
-
+    <!--END-->
 </androidx.constraintlayout.widget.ConstraintLayout>
