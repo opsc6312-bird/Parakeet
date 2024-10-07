@@ -12,5 +12,4 @@
         android:textSize="40sp"
         android:textColor="@color/white"
         android:text="@string/save" />
-
 </RelativeLayout>

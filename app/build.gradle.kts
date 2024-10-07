@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.bsh.commands.dir
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -113,4 +115,19 @@ dependencies {
 
     //Junit testing
     testImplementation("junit:junit:4.13.2")
+
+
+    //Adding the observations dependency.
+
+    implementation ("org.jetbrains.kotlin:kotlin-stdlib-jdk7:")
+    
+
+    // Adding an google material design dependency for using material components
+    implementation ("com.google.android.material:material:1.0.0")
+
+
+
+
+
+
 }
