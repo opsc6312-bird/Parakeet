@@ -1,8 +1,6 @@
 package com.example.parakeet_application.fragment
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -26,7 +24,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,7 +32,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.recyclerview.widget.SnapHelper
 import com.example.parakeet_application.R
-import com.example.parakeet_application.activities.DirectionActivity
 import com.example.parakeet_application.adapter.GooglePlaceAdapter
 import com.example.parakeet_application.adapter.InfoWindowAdapter
 import com.example.parakeet_application.constants.AppConstant
@@ -46,9 +42,7 @@ import com.example.parakeet_application.databinding.FragmentHomeBinding
 import com.example.parakeet_application.permissions.AppPermissions
 import com.example.parakeet_application.utility.LoadingDialog
 import com.example.parakeet_application.utility.State
-import com.example.parakeet_application.viewModel.BirdsApiViewModel
 import com.example.parakeet_application.viewModel.LocationViewModel
-import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
@@ -67,7 +61,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.libraries.places.api.Places
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -76,11 +69,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
-
-
 
 class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMarkerClickListener {
     private lateinit var binding: FragmentHomeBinding
@@ -103,28 +91,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     private lateinit var googlePlaceList: ArrayList<GooglePlaceModel>
     private var userSavedLocationId: ArrayList<String> = ArrayList()
     private var infoWindowAdapter: InfoWindowAdapter? = null
-    private lateinit var autocompleteFragment:AutocompleteSupportFragment
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
 
         }
-    }
-
-    @SuppressLint("SuspiciousIndentation")
-    private fun addMarker(position: LatLng): Marker{
-        val marker =   mGoogleMap?.addMarker(MarkerOptions()
-            .position((position))
-            .title("Marker")
-        )
-
-        return marker!!
-    }
-
-    @SuppressLint("SuspiciousIndentation")
-    private  fun zoomOnMap(latLng: LatLng){
-        val newLatLng = CameraUpdateFactory.newLatLngZoom(latLng, 12f)
-        mGoogleMap?.animateCamera(newLatLng)
     }
 
     override fun onCreateView(
@@ -159,68 +130,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
         val mapFragment =
             (childFragmentManager.findFragmentById(R.id.homeMap) as SupportMapFragment?)
         mapFragment?.getMapAsync(this)
-
-
-        //BIRDS API SERVICE
-        val viewModel = ViewModelProvider(this)[BirdsApiViewModel::class.java]
-
-        activity?.applicationContext?.let { Places.initialize(it,getString(R.string.API_KEY)) }
-
-
-
-        autocompleteFragment = childFragmentManager.findFragmentById(R.id.autoComplete_fragment) as AutocompleteSupportFragment
-
-        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
-
-        autocompleteFragment.setOnPlaceSelectedListener(object :PlaceSelectionListener{
-            override fun onPlaceSelected(place: Place) {
-                place.latLng?.let { place.latLng?.let { it1 -> viewModel.fetchBirds(it.latitude, it1.longitude) } }
-
-
-
-                val add = place.address
-                val id = place.id
-                val latlng = place.latLng!!
-                val marker = addMarker(latlng)
-
-
-
-                marker.title = "$add"
-                marker.snippet = "$id"
-
-                zoomOnMap(latlng)
-            }
-
-            override fun onError(p0: Status) {
-                Toast.makeText(requireContext(), "Some Error in search ${p0}", Toast.LENGTH_SHORT).show()
-                Log.i("SearchError", "${p0}")
-
-            }
-
-        })
-
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this)
-        }
-
-        viewModel.state.observe(viewLifecycleOwner) { state ->
-            mGoogleMap?.clear() // Clear existing markers if needed
-            for (item in state.listOfBirds) {
-                mGoogleMap?.addMarker(MarkerOptions()
-                    .position(LatLng(item.lat, item.lng))
-                    .title(item.locName))
-                    ?.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.bird))
-            }
-
-        }
-
-
-        //BIRDS API SERVICE
-
-
-
-
-
 
         for (placeModel in AppConstant.placesName) {
             val chip = Chip(requireContext())
@@ -647,14 +556,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface, OnMa
     }
 
     override fun onDirectionClick(googlePlaceModel: GooglePlaceModel) {
-        val placeId = googlePlaceModel.placeId
-        val lat = googlePlaceModel.geometry?.location?.lat
-        val lng = googlePlaceModel.geometry?.location?.lng
-        val intent = Intent(requireContext(), DirectionActivity::class.java)
-        intent.putExtra("placeId", placeId)
-        intent.putExtra("lat", lat)
-        intent.putExtra("lat", lat)
-        startActivity(intent)
+        TODO("Not yet implemented")
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {

@@ -54,22 +54,20 @@ class SignUpActivity : AppCompatActivity() {
         appPermissions = AppPermissions()
         loadingDialog = LoadingDialog(this)
 
-        getImageLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK && result.data != null) {
-                    val imageUri: Uri? = result.data?.data
-                    imageUri?.let {
-                        try {
-                            val bitmap: Bitmap =
-                                MediaStore.Images.Media.getBitmap(contentResolver, it)
-                            binding.imgPick.setImageBitmap(bitmap)
-                            image = it
-                        } catch (e: Exception) {
-                            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
-                        }
+     getImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val imageUri: Uri? = result.data?.data
+                imageUri?.let {
+                    try {
+                        val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it)
+                        binding.imgPick.setImageBitmap(bitmap)
+                        image = it
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
+        }
         binding.buttonSelectImage.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             getImageLauncher.launch(intent)
@@ -106,7 +104,7 @@ class SignUpActivity : AppCompatActivity() {
                                                 it.data.toString(),
                                                 Snackbar.LENGTH_SHORT
                                             ).show()
-                                            onBackPressed()
+                                             onBackPressed()
                                             val intent = Intent(
                                                 this@SignUpActivity,
                                                 LoginActivity::class.java
@@ -136,6 +134,7 @@ class SignUpActivity : AppCompatActivity() {
                     }
                 }
             }
+
             binding.imgPick.setOnClickListener {
                 if (appPermissions.isStorageOk(this))
                     pickImage()
@@ -143,8 +142,8 @@ class SignUpActivity : AppCompatActivity() {
                     appPermissions.requestStoragePermission(this)
             }
         }
-    }
 
+    }
     private fun areFieldReady(): Boolean {
         username = binding.edtUsername.text.trim().toString()
         email = binding.edtEmail.text.trim().toString()

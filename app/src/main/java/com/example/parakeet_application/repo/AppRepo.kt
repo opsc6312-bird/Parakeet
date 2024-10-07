@@ -26,7 +26,6 @@ import kotlinx.coroutines.tasks.await
 import kotlin.math.roundToInt
 
 class AppRepo {
-
     fun login(
         email: String,
         password: String
@@ -39,7 +38,6 @@ class AppRepo {
             if (auth.currentUser?.isEmailVerified!!) {
                 emit(State.success("Login Successfully"))
             } else {
-                auth.currentUser?.sendEmailVerification()?.await()
                 emit(State.failed("Verify email first"))
             }
         }
@@ -72,9 +70,6 @@ class AppRepo {
             Log.e("SignUp", "Error: ${e.message}")
             emit(State.failed(e.message!!))
         }
-
-    }.catch {
-        emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
 
     private suspend fun uploadImage(uid: String, image: Uri): Uri {
@@ -106,6 +101,7 @@ class AppRepo {
             throw e
         }
     }
+
     fun forgetPassword(email: String): Flow<State<Any>> = flow<State<Any>> {
         emit(State.loading(true))
         val auth = Firebase.auth
@@ -227,18 +223,6 @@ class AppRepo {
     }.catch {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
-    fun getDirection(url: String): Flow<State<Any>> = flow<State<Any>> {
-        emit(State.loading(true))
-        val response = RetrofitClient.retrofitApi.getDirection(url)
-        if (response.body()?.directionRouteModels?.size!! > 0){
-            emit(State.success(response.body()!!))
-        }else{
-            emit(State.failed(response.body()?.error!!))
-        }
-    }.flowOn(Dispatchers.IO)
-        .catch {
-            emit(State.failed((it.message!!)))
-        }
 
     // Function to retrieve the user's distance preferences
     fun getDistanceUnitPreferences(sharedPreferences: SharedPreferences): Pair<Boolean, Int> {
@@ -286,7 +270,6 @@ class AppRepo {
             }
         }
     }
-
 
     // Function to convert kilometers to miles
     private fun convertKilometersToMiles(kilometers: Double): Double {
